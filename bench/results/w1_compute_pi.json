@@ -1,11 +1,11 @@
 {
   "workload": "w1_compute_pi",
-  "plain_cold": 0.616222457960248,
-  "plain_warm": 0.5659587499685585,
-  "rote_cold": 0.5662207499844953,
-  "rote_warm": 3.095902502536774e-05,
-  "joblib_cold": 0.5670503749861382,
-  "joblib_warm": 9.358295938000083e-05,
-  "rote_speedup_vs_joblib_warm": 3.0228005986402744,
-  "rote_cold_overhead": -0.08114230069001838
+  "plain_cold": 0.5599679590086453,
+  "plain_warm": 0.5548966660280712,
+  "rote_cold": 0.6520553330192342,
+  "rote_warm": 3.091699909418821e-05,
+  "joblib_cold": 0.5647459590109065,
+  "joblib_warm": 9.475002298131585e-05,
+  "rote_speedup_vs_joblib_warm": 3.064657817942201,
+  "rote_cold_overhead": 0.16445114855074636
 }

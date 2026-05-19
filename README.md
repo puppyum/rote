@@ -110,8 +110,8 @@ benefit. The headline differences:
 * **Sharper invalidation.** AST canonicalization means cosmetic edits
   (comments, formatting, type hints, renames) don't bust the cache. The
   original used coarse source hashes.
-* **Auditable correctness harness.** 184 tests, including 78 differential and
-  perturbation tests across a 21-script corpus with zero stale results.
+* **Auditable correctness harness.** 313 tests, including 96 differential and
+  perturbation tests across a 30-script corpus with zero stale results.
 * **Concurrency-safe.** SQLite WAL + atomic blob writes mean many processes
   can share one cache directory without corruption (tested with a 16-process
   hammer suite).
@@ -137,7 +137,7 @@ tests/
     integration/       # examples run end-to-end
     correctness/       # differential + perturbation + concurrency
 
-corpus/                # 21 scripts for the correctness harness
+corpus/                # 30 scripts for the correctness harness
 examples/              # demo scripts
 bench/                 # workload + serializer microbenchmarks
 docs/                  # architecture, evaluation, what's new

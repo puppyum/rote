@@ -9,8 +9,8 @@ fork, no decorators required.
 
 ## Status
 
-Production-ready. **303 tests pass; mypy --strict + ruff clean.**
-**2.55× geomean faster than `joblib.Memory`**; **20.9× faster than plain
+Production-ready. **313 tests pass; mypy --strict + ruff clean.**
+**3.11× geomean faster than `joblib.Memory`**; **59.1× faster than plain
 Python** on the paper-shaped multi-stage pipeline. Every documented
 paper-fidelity gap closed (§3.3.1 write-deps, §3.3.2 perf guard, §3.4
 global reachability). Supports sync/async, classmethod/staticmethod,
@@ -45,7 +45,7 @@ Deeper detail: [docs/architecture.md](docs/architecture.md). Past trade-offs
 
 ```bash
 source .venv/bin/activate
-rtk proxy pytest tests/ -q                    # 303 tests, ~3 min
+rtk proxy pytest tests/ -q                    # 313 tests, ~3 min
 rtk proxy pytest bench/ -m bench -q           # 6 benchmarks, ~30s
 rtk proxy ruff check src                      # lint
 rtk proxy mypy --strict src/                  # type check (clean)

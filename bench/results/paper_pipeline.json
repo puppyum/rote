@@ -1,12 +1,12 @@
 {
   "workload": "paper_pipeline_edit_downstream",
   "n_records": 200000,
-  "plain_v1_s": 0.27484720799839124,
-  "plain_v2_s": 0.22114437498385087,
-  "rote_cold_s": 0.28221162501722574,
-  "rote_warm_edit_downstream_s": 0.00469804200110957,
-  "rote_warm_speedup_vs_plain": 47.071604496430986,
-  "joblib_cold_s": 0.21346649999031797,
-  "joblib_warm_edit_downstream_s": 0.0014675830025225878,
-  "rote_vs_joblib_warm": 0.3123818395356998
+  "plain_v1_s": 0.22719920799136162,
+  "plain_v2_s": 0.20169879199238494,
+  "rote_cold_s": 0.2780542090185918,
+  "rote_warm_edit_downstream_s": 0.003412166959606111,
+  "rote_warm_speedup_vs_plain": 59.11164206796855,
+  "joblib_cold_s": 0.20477950002532452,
+  "joblib_warm_edit_downstream_s": 0.0011396670015528798,
+  "rote_vs_joblib_warm": 0.33400094867703634
 }

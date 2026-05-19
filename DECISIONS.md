@@ -15,6 +15,37 @@ disagreement with the IncPy 2011 paper. Newest entries at the top.
 
 ---
 
+## [2026-05-19 — review 2] Finish the rote rename and close residual dependency holes
+
+**Context:** After the package rename, a final repo-wide scan still found stale
+legacy benchmark/result labels and an internal Jupyter magic class name. The
+same review also found three remaining correctness hazards: cache-internal file
+filtering used raw string prefixes, static impurity analysis was cached even when
+a referenced helper binding changed, and hashing a FIFO/non-regular file
+dependency could block forever.
+
+**Decision:** Treat `rote` as the only project/package name in tracked code,
+docs, benchmark result keys, and internal class names. Replace cache-directory
+filtering with a `realpath` + `commonpath` containment check so sibling files
+like `.rote-input.txt` remain tracked. Recompute static impure-callee analysis
+whenever the external dependency digest changes, preserving hot-hit caching for
+unchanged bindings while catching rebinding from a pure helper to `time.time` or
+similar C builtins. For non-regular file dependencies, never open the path for
+content hashing; produce a changing dependency marker so old entries miss rather
+than blocking or returning stale FIFO/device data.
+
+**Alternatives considered:** Keeping the legacy dot-cache directory ignored was
+rejected because the runtime cache directory is now `.rote/`. Recomputing static
+impurity on every hit was rejected as unnecessary overhead; tying it to the
+dependency digest catches the rebinding cases without penalizing stable hot
+paths. Content-hashing FIFOs was rejected because opening a FIFO for validation
+can block indefinitely.
+
+**Consequences:** The tracked tree has no legacy package-name remnants. File
+dependency tracking is no longer fooled by path-prefix siblings of the cache
+directory. Non-regular file dependencies are conservative misses, which matches
+the paper's "when uncertain, do not memoize" safety model.
+
 ## [2026-05-19 — review] Close cache-key and dependency false-negative holes
 
 **Context:** A paper-faithfulness review found six stale-result or claimed-feature
@@ -283,17 +314,18 @@ eliminated. Real-world speedup vs joblib improved from 4.0× geomean to
 **Context:** Re-content-hashing a 5 MB intermediate JSON file on every
 cache hit cost ~5 ms — the dominant overhead on multi-stage pipelines.
 
-**Decision:** Added a 1024-entry process-local LRU keyed on
-``(abspath, size, mtime_ns) → blake3_hash``. A file whose filesystem
-metadata is unchanged since the last hash MUST have the same content,
-so we skip the re-read.
+**Decision:** Keep a 1024-entry process-local LRU for regular files only,
+keyed on POSIX identity and change metadata:
+``(path, st_dev, st_ino, st_size, st_mtime_ns, st_ctime_ns)``. The ctime
+component is important: same-size, mtime-preserving edits still change ctime
+on POSIX, so the cached content hash is not reused for those edits. On
+non-POSIX platforms the cache is bypassed rather than trusting weaker ctime
+semantics.
 
-**Consequences:** Multi-stage pipeline edit-downstream speedup jumped
-from ~24× to **35× faster than plain Python** (paper-shaped benchmark).
-The cache key remains the content hash, so we don't lose the protection
-against ``cp -p`` and mtime-preserving editors — those bypass the
-metadata-cache by virtue of having different metadata than what was
-last seen.
+**Consequences:** Unchanged regular file dependencies avoid repeated content
+reads on warm hits. Mtime-preserving edits are still detected. Non-regular file
+dependencies such as FIFOs are not opened for content hashing and force a miss
+instead of blocking or pretending their contents are stable.
 
 ## [2026-05-19 — iter 6] Closed all documented alpha gaps
 
@@ -354,9 +386,10 @@ them, takes `rote` from "working alpha" to "production-fledged".
    || b"arg1=" + fp(arg1) || ...` so parameter position matters.
 
 **Consequences:**
-- 304 / 304 tests pass (up from 272); ruff + mypy --strict clean.
-- Geometric mean **8.01×** faster than `joblib.Memory` (was 7.73).
-- Paper-shaped pipeline: **40.8×** faster than plain Python (was 35.3).
+- Current follow-up verification is 313 / 313 tests passing; ruff + mypy
+  --strict clean.
+- Geometric mean **3.11×** faster than `joblib.Memory`.
+- Paper-shaped pipeline: **59.1×** faster than plain Python.
 - All eight documented alpha-stage gaps closed.
 
 ## [2026-05-19 — iter 4] Lazy hit-counter updates + optional fsync

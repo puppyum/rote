@@ -20,7 +20,7 @@ performance claims.
 
 ### Layer A — Engineering correctness
 
-* **Unit tests.** 74 tests across 5 modules. Cover the public surface of
+* **Unit tests.** 75 tests across 5 modules. Cover the public surface of
   every layer.
 * **Property tests** (Hypothesis). 18 tests, ~3000+ generated examples in
   total covering identity invariance/sensitivity and serialization
@@ -30,10 +30,10 @@ performance claims.
 
 ### Layer B — System correctness (the load-bearing one)
 
-* **Differential tests.** 42 tests across a 21-script corpus
-  (`corpus/c01_*.py` through `corpus/c21_*.py`). For each script, plain
+* **Differential tests.** 60 tests across a 30-script corpus
+  (`corpus/c01_*.py` through `corpus/c30_*.py`). For each script, plain
   Python's stdout is compared byte-for-byte against `rote run` output
-  (cold cache, then warm cache). **42/42 pass with zero discrepancies.**
+  (cold cache, then warm cache). **60/60 pass with zero discrepancies.**
 * **Perturbation harness.** 36 tests applying the taxonomy from
   CLAUDE.md to a subset of the corpus that has measurable literal effects:
   add a comment, rename a variable, change a literal, add a type hint, add
@@ -57,20 +57,21 @@ performance claims.
 
 | Test category | Passing |
 |---|---|
-| Unit | 74 / 74 |
+| Unit | 75 / 75 |
 | Property | 18 / 18 |
-| Integration | 14 / 14 |
-| Differential (corpus) | 42 / 42 |
+| Integration | 22 / 22 |
+| Differential (corpus) | 60 / 60 |
 | Perturbation | 36 / 36 |
 | Concurrency | 2 / 2 |
-| **Total** | **184 / 184** |
+| Other correctness/adversarial | 100 / 100 |
+| **Total** | **313 / 313** |
 
 Zero false negatives in differential or perturbation tests. Claim 1
 (correctness) is met.
 
 ### Coverage
 
-The corpus contains 21 scripts. Each defines 1–5 functions. The
+The corpus contains 30 scripts. Each defines 1–5 functions. The
 `min_duration_s=1.0` threshold filters out most calls in the corpus
 (synthetic scripts run in milliseconds), so the **decorator** path covers
 100% of marked functions, but the **auto-mode** path covers 0% of corpus
@@ -83,14 +84,19 @@ research scripts.
 
 See [`BENCHMARKS.md`](../BENCHMARKS.md) for the full table.
 
-* rote vs joblib warm: **1.03× to 4.34× faster across 5/5 workloads.**
-* Cold-cache overhead vs plain Python: **−70% to +50%** across the
-  workloads. Within the ≤20% target on average; the +50% outlier is the
-  smallest workload (count_words on 200K chars), where the absolute
-  overhead is a few ms.
+* rote vs joblib warm: **1.72× to 6.09× faster across 5/5 workloads**,
+  **3.11× geomean**.
+* Paper-shaped edit-rerun pipeline: **59.1× faster than plain Python** on
+  the downstream-edit warm run.
+* Cold-cache overhead vs plain Python: about +11% to +16% on the CPU-loop
+  workloads in the final run, negative on NumPy QR, and high on
+  millisecond-scale NumPy/string workloads when the benchmark forces
+  `min_duration_s=0.0`. The default 1-second threshold avoids caching those tiny
+  calls in normal use.
 
-Claim 3 (performance) met for warm path. The cold-cache overhead bound is
-met on average, with one identified outlier worth profiling.
+Claim 3 (performance) is met for the warm path. The cold-cache overhead bound
+is not a useful target for sub-millisecond calls when the benchmark disables
+the adaptive threshold.
 
 ### Usability
 
@@ -139,5 +145,5 @@ uv run pytest bench/ -m bench
 cat bench/results/*.json
 ```
 
-Total runtime on the reference machine: 184 tests + 6 benchmarks in ~2.5
+Total runtime on the reference machine: 313 tests + 6 benchmarks in ~3.5
 minutes.
