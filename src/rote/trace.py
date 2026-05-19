@@ -353,6 +353,14 @@ class Tracer:
         for listener in self._listeners:
             with contextlib.suppress(Exception):
                 listener(ev)
+        # Drop heavy references after listeners have seen them. The buffer
+        # (and the eventual spill) only needs metadata: kind, t_ns,
+        # qualname, module, depth, payload. Holding ``code`` and
+        # ``return_value`` would pin CodeType objects + arbitrary return
+        # values for as long as the event sits in the buffer — that's
+        # what made long ``auto()`` blocks balloon to tens of MB.
+        ev.code = None
+        ev.return_value = None
         if len(self.buffer) > self.max_buffer:
             self._spill()
 
