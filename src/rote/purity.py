@@ -17,6 +17,7 @@ from __future__ import annotations
 import os
 import stat
 import time
+from collections import OrderedDict
 from dataclasses import dataclass, field
 from pathlib import Path
 from types import CodeType
@@ -61,10 +62,20 @@ class PurityTracker:
     :meth:`on_verdict` callback when frames complete.
     """
 
+    # Bounded by VERDICTS_CAP. In production the wrapper does not read this
+    # dict, but ``auto()`` mode and diagnostic tests do — and a long-running
+    # session can call millions of distinct Python functions. Cap the dict
+    # so we keep the most-recent N verdicts (FIFO) instead of leaking one
+    # entry per frame entered.
+    VERDICTS_CAP = 1024
+
     def __init__(self, tracer: Tracer) -> None:
         self.tracer: Tracer = tracer
         self.stack: list[CallFrame] = []
-        self.verdicts: dict[int, Verdict] = {}  # keyed by id(code) of latest frame
+        # OrderedDict so insertion order tracks recency; evict the oldest
+        # when over cap. Keyed by id(code) of the most recently completed
+        # frame.
+        self.verdicts: OrderedDict[int, Verdict] = OrderedDict()
         self._tracer_handle = self._on_event
         tracer.add_listener(self._tracer_handle)
 
@@ -126,6 +137,8 @@ class PurityTracker:
             file_write_deps=sorted(frame.file_writes_closed),
         )
         self.verdicts[id(frame.code)] = verdict
+        if len(self.verdicts) > self.VERDICTS_CAP:
+            self.verdicts.popitem(last=False)
 
     # ----- audit-hook plumbing
 
