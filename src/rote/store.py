@@ -85,9 +85,13 @@ class Store:
         # ``check_same_thread=False`` is safe because we serialize via SQLite's
         # own locking, not Python-level. We hold the connection per-Store.
         conn = sqlite3.connect(self.db_path, check_same_thread=False, isolation_level=None)
+        # busy_timeout MUST be set before journal_mode=WAL — the WAL pragma
+        # takes a brief exclusive lock and immediately fails ("database is
+        # locked") if another process is mid-write. With busy_timeout, SQLite
+        # spins until the lock clears.
+        conn.execute("PRAGMA busy_timeout=10000")
         conn.execute("PRAGMA journal_mode=WAL")
         conn.execute("PRAGMA synchronous=NORMAL")
-        conn.execute("PRAGMA busy_timeout=10000")
         # Bigger cache + memory-mapped reads further reduce per-query overhead.
         conn.execute("PRAGMA cache_size=-20000")  # 20 MB page cache
         conn.execute("PRAGMA mmap_size=268435456")  # 256 MB mmap
