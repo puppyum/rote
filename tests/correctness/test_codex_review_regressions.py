@@ -192,6 +192,12 @@ def test_cache_dir_prefix_sibling_file_dependency_is_tracked(tmp_path: Path) -> 
 def test_sync_perf_guard_blacklists_when_write_is_slower(monkeypatch: Any) -> None:
     import rote.session as session_mod
 
+    # The conftest autouse fixture disables the perf guard for tests
+    # because it masks cache mechanics on slow filesystems. This test is
+    # the explicit verification that the guard works, so restore the
+    # production default (5 ms).
+    monkeypatch.setattr(session_mod, "_PERF_GUARD_MIN_WRITE_NS", 5_000_000)
+
     original_encode = session_mod.encode
 
     def slow_encode(value: Any) -> tuple[str, bytes]:
