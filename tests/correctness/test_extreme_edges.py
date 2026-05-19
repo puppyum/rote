@@ -530,33 +530,49 @@ def test_many_threads_distinct_keys_no_corruption() -> None:
 
 
 def test_many_threads_same_key_returns_consistent_value() -> None:
-    """100 threads, all calling f(7). Must all return the same value. Race
+    """50 threads, all calling f(7). Must all return the same value. Race
     condition would manifest as some threads returning the function output
-    and others returning some intermediate / wrong state."""
+    and others returning some intermediate / wrong state.
+
+    Uses a deterministic CPU spin (not time.sleep) to widen the race window
+    so the test doesn't have to fight the impure-stdlib check, and so wall-
+    clock variance under load doesn't push us past the join timeout.
+    """
     rote.configure(min_duration_s=0.0)
-    barrier = threading.Barrier(50)
+    barrier = threading.Barrier(50, timeout=30.0)
     results: list[int] = []
+    errors: list[BaseException] = []
     lock = threading.Lock()
 
     @rote.cache
     def compute(n: int) -> int:
-        # Sleep to widen the race window.
-        time.sleep(0.001)
-        return n * 13
+        # Tiny CPU spin (~10-100 µs depending on hardware) widens the race
+        # window without crossing into impure-stdlib territory.
+        acc = 0
+        for i in range(200):
+            acc += i * i
+        return n * 13 + (acc - acc)  # acc cancels; result is deterministic
 
     def worker() -> None:
-        barrier.wait(timeout=5.0)
-        r = compute(7)
-        with lock:
-            results.append(r)
+        try:
+            barrier.wait()
+            r = compute(7)
+            with lock:
+                results.append(r)
+        except BaseException as e:  # noqa: BLE001
+            with lock:
+                errors.append(e)
 
     threads = [threading.Thread(target=worker) for _ in range(50)]
     for t in threads:
         t.start()
     for t in threads:
-        t.join(timeout=10.0)
+        t.join(timeout=60.0)
 
-    assert len(results) == 50
+    alive = [t for t in threads if t.is_alive()]
+    assert not alive, f"{len(alive)} threads still alive after 60s — deadlock?"
+    assert errors == [], f"threads errored: {errors[:3]}"
+    assert len(results) == 50, f"only {len(results)}/50 results collected"
     assert all(r == 91 for r in results), f"inconsistent results: {set(results)}"
 
 

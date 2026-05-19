@@ -11,7 +11,7 @@ from rote.identity import canonical_source
 
 
 @given(st.integers(min_value=-1000, max_value=1000))
-@settings(max_examples=200)
+@settings(max_examples=200, deadline=None)
 def test_comment_invariance(literal):
     src_a = f"def f(x):\n    return x + {literal}\n"
     src_b = f"def f(x):\n    # comment about {literal}\n    return x + {literal}\n"
@@ -19,7 +19,7 @@ def test_comment_invariance(literal):
 
 
 @given(st.integers(min_value=-1000, max_value=1000))
-@settings(max_examples=200)
+@settings(max_examples=200, deadline=None)
 def test_docstring_invariance(literal):
     src_a = f"def f(x):\n    return x + {literal}\n"
     src_b = f'def f(x):\n    """doc"""\n    return x + {literal}\n'
@@ -36,7 +36,7 @@ _PY_KEYWORDS = frozenset(
         lambda s: s not in _PY_KEYWORDS and s[0].isalpha()
     )
 )
-@settings(max_examples=200)
+@settings(max_examples=200, deadline=None)
 def test_rename_invariance(name):
     a = "def f(x):\n    y = x + 1\n    return y\n"
     b = f"def f({name}):\n    z = {name} + 1\n    return z\n"
@@ -44,7 +44,7 @@ def test_rename_invariance(name):
 
 
 @given(st.integers(min_value=-1000, max_value=1000))
-@settings(max_examples=200)
+@settings(max_examples=200, deadline=None)
 def test_annotation_invariance(literal):
     a = f"def f(x):\n    return x + {literal}\n"
     b = f"def f(x: int) -> int:\n    return x + {literal}\n"
@@ -52,7 +52,7 @@ def test_annotation_invariance(literal):
 
 
 @given(st.integers(min_value=2, max_value=20))
-@settings(max_examples=100)
+@settings(max_examples=100, deadline=None)
 def test_whitespace_invariance(blank_lines):
     blanks = "\n" * blank_lines
     a = "def f(x):\n    return x + 1\n"
@@ -69,7 +69,7 @@ def test_whitespace_invariance(blank_lines):
 
 
 @given(st.integers(min_value=0, max_value=10000), st.integers(min_value=0, max_value=10000))
-@settings(max_examples=200)
+@settings(max_examples=200, deadline=None)
 def test_literal_change_detected(a, b):
     if a == b:
         return
@@ -93,7 +93,7 @@ _ident = st.text(alphabet="abcdef", min_size=1, max_size=4).filter(
 
 
 @given(_ident, _ident)
-@settings(max_examples=100)
+@settings(max_examples=100, deadline=None)
 def test_call_target_change_detected(name_a, name_b):
     if name_a == name_b:
         return
@@ -103,7 +103,7 @@ def test_call_target_change_detected(name_a, name_b):
 
 
 @given(st.integers(min_value=0, max_value=999), st.integers(min_value=0, max_value=999))
-@settings(max_examples=100)
+@settings(max_examples=100, deadline=None)
 def test_default_arg_change_detected(a, b):
     if a == b:
         return

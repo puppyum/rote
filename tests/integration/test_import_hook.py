@@ -22,7 +22,13 @@ def _run(cache_dir, script, cwd):
 
 
 def test_imported_helper_function_gets_cached(tmp_path):
-    """A helper module imported by the entry script should also be auto-wrapped."""
+    """A helper module imported by the entry script should also be auto-wrapped.
+
+    We check the cache by inspecting the SQLite index after the first run
+    rather than by timing. Wall-clock timing across two subprocess
+    invocations is dominated by Python startup (~150 ms) on most machines,
+    which makes any speedup ratio assertion flaky under CI load.
+    """
     workdir = tmp_path / "work"
     workdir.mkdir()
     helper = workdir / "helpers.py"
@@ -34,18 +40,29 @@ def test_imported_helper_function_gets_cached(tmp_path):
         "    return total\n"
     )
     main = workdir / "main.py"
-    # Heavier loop so per-process startup doesn't dominate the difference.
     main.write_text(
         "from helpers import slow_compute\n"
         "print(slow_compute(8_000_000))\n"
     )
 
     cache_dir = tmp_path / "cache"
-    out1, t1 = _run(cache_dir, main, workdir)
-    out2, t2 = _run(cache_dir, main, workdir)
+    out1, _ = _run(cache_dir, main, workdir)
+    out2, _ = _run(cache_dir, main, workdir)
     assert out1 == out2
-    # Second run hits cache. Threshold allows for noisy CI hardware.
-    assert t2 < t1 * 0.7, f"import-hook caching didn't help: {t1=:.3f}s {t2=:.3f}s"
+
+    # The cache must contain at least one entry whose function_name mentions
+    # the imported helper. If the import hook didn't fire, the entry would
+    # exist under `main` only (or not at all).
+    import sqlite3
+    conn = sqlite3.connect(cache_dir / "index.db")
+    try:
+        rows = conn.execute("SELECT function_name FROM entries").fetchall()
+    finally:
+        conn.close()
+    names = [r[0] for r in rows]
+    assert any("slow_compute" in n for n in names), (
+        f"import-hook didn't wrap helper module; entries: {names}"
+    )
 
 
 def test_no_import_hook_flag(tmp_path):

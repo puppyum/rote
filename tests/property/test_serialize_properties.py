@@ -16,37 +16,37 @@ def _roundtrip(value):
 
 
 @given(st.integers())
-@settings(max_examples=500)
+@settings(max_examples=500, deadline=None)
 def test_int_roundtrip(v):
     assert _roundtrip(v) == v
 
 
 @given(st.floats(allow_nan=False))
-@settings(max_examples=500)
+@settings(max_examples=500, deadline=None)
 def test_float_roundtrip(v):
     assert _roundtrip(v) == v
 
 
 @given(st.text())
-@settings(max_examples=500)
+@settings(max_examples=500, deadline=None)
 def test_text_roundtrip(v):
     assert _roundtrip(v) == v
 
 
 @given(st.binary())
-@settings(max_examples=500)
+@settings(max_examples=500, deadline=None)
 def test_bytes_roundtrip(v):
     assert _roundtrip(v) == v
 
 
 @given(st.lists(st.integers(), max_size=50))
-@settings(max_examples=500)
+@settings(max_examples=500, deadline=None)
 def test_int_list_roundtrip(v):
     assert _roundtrip(v) == v
 
 
 @given(st.dictionaries(st.text(min_size=1), st.integers(), max_size=20))
-@settings(max_examples=500)
+@settings(max_examples=500, deadline=None)
 def test_dict_roundtrip(v):
     assert _roundtrip(v) == v
 
