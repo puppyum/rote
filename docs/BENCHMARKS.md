@@ -21,13 +21,13 @@ Warm timings are **medians of 20 warm-cache iterations** to remove single-call n
 
 | Workload | joblib warm | rote warm | speedup |
 |---|---|---|---|
-| w1_compute_pi | 95 µs | 31 µs | **3.06×** |
-| w2_polynomial_pi | 97 µs | 32 µs | **3.08×** |
-| w3_numpy_qr | 195 µs | 32 µs | **6.09×** |
-| w4_count_words | 96 µs | 33 µs | **2.95×** |
-| w5_matrix_invert | 84 µs | 49 µs | **1.72×** |
+| w1_compute_pi | 101 µs | 49 µs | **2.06×** |
+| w2_polynomial_pi | 90 µs | 35 µs | **2.58×** |
+| w3_numpy_qr | 226 µs | 35 µs | **6.40×** |
+| w4_count_words | 98 µs | 37 µs | **2.64×** |
+| w5_matrix_invert | 88 µs | 68 µs | **1.29×** |
 
-**rote wins on 5/5 workloads warm.** Geometric mean: **3.11× faster than joblib**.
+**rote wins on 5/5 workloads warm.** Geometric mean: **2.59× faster than joblib**.
 
 ### Paper-shaped multi-stage pipeline (the headline IncPy claim)
 
@@ -36,14 +36,14 @@ multi-stage pipeline (parse → aggregate → format) where the user edits the
 downstream stage and re-runs. Upstream stages are served from cache.
 
 ```
-Plain Python (all stages):       202 ms
-rote cold (first run):         278 ms  (cache write overhead)
-rote warm (edit downstream):     3.4 ms  (59.1× faster than plain)
-joblib warm (edit downstream):     1.1 ms
+Plain Python (all stages):       255 ms
+rote cold (first run):           369 ms  (cache write overhead)
+rote warm (edit downstream):     5.5 ms  (46× faster than plain)
+joblib warm (edit downstream):   1.8 ms
 ```
 
 The original IncPy paper §4.2 reported ~10× speedups on edit-rerun workflows;
-we measure **59.1×** on a representative pipeline. In this file-based benchmark,
+we measure **~46×** on a representative pipeline. In this file-based benchmark,
 joblib's warm run is faster because `rote` now content-hashes file dependencies
 on every hit instead of trusting `(size, mtime)` metadata; that is an intentional
 correctness tradeoff to avoid silent stale results from mtime-preserving edits.

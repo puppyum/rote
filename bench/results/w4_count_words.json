@@ -1,11 +1,11 @@
 {
   "workload": "w4_count_words",
-  "plain_cold": 0.004103625018615276,
-  "plain_warm": 0.0036604999913834035,
-  "rote_cold": 0.009466374991461635,
-  "rote_warm": 3.258301876485348e-05,
-  "joblib_cold": 0.004409999994095415,
-  "joblib_warm": 9.61670302785933e-05,
-  "rote_speedup_vs_joblib_warm": 2.9514463031377063,
-  "rote_cold_overhead": 1.3068323612706605
+  "plain_cold": 0.0037822499871253967,
+  "plain_warm": 0.004792666994035244,
+  "rote_cold": 0.014510167005937546,
+  "rote_warm": 3.708299482241273e-05,
+  "joblib_cold": 0.006448332977015525,
+  "joblib_warm": 9.804102592170238e-05,
+  "rote_speedup_vs_joblib_warm": 2.6438270800730206,
+  "rote_cold_overhead": 2.8363849706734037
 }

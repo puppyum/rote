@@ -82,7 +82,7 @@ research scripts.
 
 ### Performance vs joblib
 
-See [`BENCHMARKS.md`](../BENCHMARKS.md) for the full table.
+See [`BENCHMARKS.md`](./BENCHMARKS.md) for the full table.
 
 * rote vs joblib warm: **1.72× to 6.09× faster across 5/5 workloads**,
   **3.11× geomean**.
