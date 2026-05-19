@@ -62,6 +62,12 @@ class Entry:
     last_hit_at: int | None = None
 
 
+# When the deferred-hit buffer grows past this, ``hit()`` triggers an
+# auto-flush. Caps the per-process memory cost of lazy hit counters
+# even when the user never calls ``close()`` (Jupyter kernels, daemons).
+_PENDING_HITS_FLUSH_AT = 1024
+
+
 class Store:
     """Atomic, concurrent-safe cache store."""
 
@@ -75,7 +81,11 @@ class Store:
         self.db_path: Path = self.cache_dir / "index.db"
         self._conn: sqlite3.Connection | None = None
         self.fsync_writes: bool = fsync_writes
-        # Buffer of (key, increment) for lazy hit-counter updates.
+        # Buffer of keys for lazy hit-counter updates. Flushed automatically
+        # when the buffer reaches _PENDING_HITS_FLUSH_AT or when close() is
+        # called — without the size trigger, a long-lived Store (e.g. a
+        # Jupyter kernel) would grow this list one entry per cache hit
+        # forever.
         self._pending_hits: list[bytes] = []
         self._open_db()
 
@@ -277,9 +287,15 @@ class Store:
         With ``eager=True`` (default), updates the counter immediately. With
         ``eager=False`` the key is buffered; call :meth:`flush_hits` to commit.
         Saves a SQL UPDATE per hit on hot loops.
+
+        When buffered, the buffer auto-flushes once it reaches
+        ``_PENDING_HITS_FLUSH_AT`` so a long-running process can't accumulate
+        unbounded keys in memory.
         """
         if not eager:
             self._pending_hits.append(key)
+            if len(self._pending_hits) >= _PENDING_HITS_FLUSH_AT:
+                self.flush_hits()
             return
         assert self._conn is not None
         self._conn.execute(
