@@ -32,6 +32,7 @@ mutants/
 
 # rote cache directory (the package writes here at runtime)
 .rote/
+.incpy2/
 
 # IDE / OS
 .vscode/
@@ -47,3 +48,9 @@ c07.csv
 
 # Paper PDF (copyright — keep local, don't redistribute)
 *.pdf
+IncPy*.pdf
+
+# Internal scratch / review notes (never publish)
+QUESTIONS.md
+CODEX_REVIEW_*.md
+c*.csv
