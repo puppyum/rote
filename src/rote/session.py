@@ -254,6 +254,15 @@ def _leave_infra() -> None:
     _infra_depth.n = getattr(_infra_depth, "n", 1) - 1
 
 
+def _path_is_under(path: str, root: str) -> bool:
+    try:
+        real_path = _os_path.realpath(path)
+        real_root = _os_path.realpath(root)
+        return _os_path.commonpath((real_path, real_root)) == real_root
+    except (OSError, ValueError):
+        return False
+
+
 def _audit_check_callee_purity(code: Any, instruction_offset: int) -> object:
     """PY_START callback: flag calls to impure stdlib symbols.
 
@@ -767,18 +776,18 @@ def _async_cache(func: Callable[..., Any]) -> Callable[..., Any]:
     signature_cache = _signature_cache(func)
     cached_fid: bytes | None = None
     static_impurity: list[str] | None = None
+    static_impurity_digest: bytes | None = None
     global_dep_names: list[str] | None = None
     module_attr_dep_names: list[tuple[str, str, str]] | None = None
 
     @functools.wraps(func)
     async def wrapper(*args: Any, **kwargs: Any) -> Any:
-        nonlocal cached_fid, static_impurity, global_dep_names, module_attr_dep_names
+        nonlocal cached_fid, static_impurity, static_impurity_digest, global_dep_names, module_attr_dep_names
         cfg = get_config()
         sess = _get_session()
         store = sess.ensure_store()
         if cached_fid is None:
             cached_fid = transitive_function_ids(func)
-            static_impurity = _static_impure_callees(func)
             global_dep_names = _global_dep_names(func)
             module_attr_dep_names = _module_attr_dep_names(func)
         fid = cached_fid
@@ -795,6 +804,9 @@ def _async_cache(func: Callable[..., Any]) -> Callable[..., Any]:
         global_digest = _global_deps_fingerprint(
             func, global_dep_names or [], module_attr_dep_names or []
         )
+        if static_impurity is None or static_impurity_digest != global_digest:
+            static_impurity = _static_impure_callees(func)
+            static_impurity_digest = global_digest
         key = cache_key(fid, input_digest, b"", global_digest)
 
         cached_tuple = mem_cache.get(key)
@@ -925,8 +937,8 @@ def _async_cache(func: Callable[..., Any]) -> Callable[..., Any]:
                 sess.stats.too_big_skips += 1
                 return result
             cache_root = str(cfg.cache_dir)
-            file_deps = sorted({p for p in recorded_reads if not p.startswith(cache_root)})
-            write_deps = sorted({p for p in recorded_writes if not p.startswith(cache_root)})
+            file_deps = sorted({p for p in recorded_reads if not _path_is_under(p, cache_root)})
+            write_deps = sorted({p for p in recorded_writes if not _path_is_under(p, cache_root)})
             # Hash covers reads AND writes — a deleted/edited write output
             # must invalidate the entry so the next call re-creates it.
             combined_for_hash = sorted(set(file_deps) | set(write_deps))
@@ -1007,17 +1019,17 @@ def cache[**P, R](func: Callable[P, R]) -> Callable[P, R]:
     # wrapper never writes to cache (the function statically references an
     # impure stdlib symbol that runtime monitoring would miss).
     static_impurity: list[str] | None = None
+    static_impurity_digest: bytes | None = None
 
     @functools.wraps(func)
     def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
-        nonlocal cached_fid, static_impurity, global_dep_names, module_attr_dep_names
+        nonlocal cached_fid, static_impurity, static_impurity_digest, global_dep_names, module_attr_dep_names
         cfg = get_config()
         sess = _get_session()
         store = sess.ensure_store()
 
         if cached_fid is None:
             cached_fid = transitive_function_ids(func)
-            static_impurity = _static_impure_callees(func)
             global_dep_names = _global_dep_names(func)
             module_attr_dep_names = _module_attr_dep_names(func)
         fid = cached_fid
@@ -1036,6 +1048,9 @@ def cache[**P, R](func: Callable[P, R]) -> Callable[P, R]:
         global_digest = _global_deps_fingerprint(
             func, global_dep_names or [], module_attr_dep_names or []
         )
+        if static_impurity is None or static_impurity_digest != global_digest:
+            static_impurity = _static_impure_callees(func)
+            static_impurity_digest = global_digest
         key = cache_key(fid, input_digest, b"", global_digest)
 
         # ---- Tier 1: in-memory hit cache (no SQLite, no disk, no decode).
@@ -1194,10 +1209,10 @@ def cache[**P, R](func: Callable[P, R]) -> Callable[P, R]:
 
             cache_root = str(cfg.cache_dir)
             file_deps = sorted(
-                {p for p in recorded_reads if not p.startswith(cache_root)}
+                {p for p in recorded_reads if not _path_is_under(p, cache_root)}
             )
             write_deps = sorted(
-                {p for p in recorded_writes if not p.startswith(cache_root)}
+                {p for p in recorded_writes if not _path_is_under(p, cache_root)}
             )
             combined_for_hash = sorted(set(file_deps) | set(write_deps))
             dep_hash = file_dep_hash(combined_for_hash) if combined_for_hash else None

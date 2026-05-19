@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import multiprocessing as mp
 import os
 import time
 import types
@@ -18,8 +19,18 @@ def _codex_global_helper(value: int) -> int:
     return value + 1
 
 
+def _codex_clock_helper() -> float:
+    return 1.0
+
+
 if TYPE_CHECKING:
     _codex_late_global = 0
+
+
+def _hash_file_dep_worker(path: str, queue: mp.Queue[Any]) -> None:
+    from rote.purity import file_dep_hash
+
+    queue.put(file_dep_hash([path]))
 
 
 def test_omitted_mutable_default_participates_in_cache_key() -> None:
@@ -146,6 +157,40 @@ def test_file_dependency_hash_reuses_unchanged_posix_stat(
     assert calls == 1
 
 
+def test_file_dependency_hash_does_not_block_on_fifo(tmp_path: Path) -> None:
+    if not hasattr(os, "mkfifo"):
+        pytest.skip("fifo test requires os.mkfifo")
+
+    fifo_path = tmp_path / "data.fifo"
+    os.mkfifo(fifo_path)
+    queue: mp.Queue[Any] = mp.Queue()
+    process = mp.Process(target=_hash_file_dep_worker, args=(str(fifo_path), queue))
+    process.start()
+    process.join(1.0)
+    if process.is_alive():
+        process.terminate()
+        process.join()
+    assert not process.is_alive()
+    assert queue.get(timeout=1.0)
+
+
+def test_cache_dir_prefix_sibling_file_dependency_is_tracked(tmp_path: Path) -> None:
+    data_path = tmp_path / ".rote-input.txt"
+    data_path.write_text("old")
+    rote.configure(cache_dir=tmp_path / ".rote", min_duration_s=0.0)
+
+    @rote.cache
+    def read_text() -> str:
+        return data_path.read_text()
+
+    assert read_text() == "old"
+    assert read_text() == "old"
+
+    data_path.write_text("new")
+
+    assert read_text() == "new"
+
+
 def test_sync_perf_guard_blacklists_when_write_is_slower(monkeypatch: Any) -> None:
     import rote.session as session_mod
 
@@ -186,6 +231,28 @@ def test_rebound_global_helper_invalidates_cached_result() -> None:
         assert use_helper(1) == 11
     finally:
         globals()["_codex_global_helper"] = original
+
+
+def test_rebound_global_helper_to_impure_builtin_is_not_cached() -> None:
+    @rote.cache
+    def call_helper() -> float:
+        return _codex_clock_helper()
+
+    assert call_helper() == 1.0
+    assert call_helper() == 1.0
+
+    original = _codex_clock_helper
+    try:
+        globals()["_codex_clock_helper"] = time.time
+        first = call_helper()
+        time.sleep(0.001)
+        second = call_helper()
+    finally:
+        globals()["_codex_clock_helper"] = original
+
+    assert first != second
+    stats = rote.stats()
+    assert any("time.time" in reason for reason in stats["invalidation_reasons"])
 
 
 def test_rebound_closure_helper_invalidates_cached_result() -> None:

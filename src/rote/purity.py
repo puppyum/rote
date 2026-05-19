@@ -15,6 +15,7 @@ fingerprints, observed audit events, and a final "verdict".
 from __future__ import annotations
 
 import os
+import stat
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -296,6 +297,10 @@ def file_dep_hash(paths: list[str]) -> bytes:
         try:
             path = Path(p)
             st = path.stat()
+            if not stat.S_ISREG(st.st_mode):
+                marker = time.perf_counter_ns()
+                parts.append(f"{p}:nonregular:{st.st_mode}:{marker}".encode())
+                continue
             parts.append(f"{p}:{st.st_size}:".encode() + _cached_file_content_digest(path, st))
         except OSError:
             parts.append(f"{p}:missing".encode())
