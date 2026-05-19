@@ -664,8 +664,30 @@ _MEM_CACHE_LIMIT = 256
 # their run time on the first miss (paper §3.3.2). Once blacklisted, the
 # wrapper still runs the function on every call but skips the cache write
 # — the cure was worse than the disease.
-_PERF_BLACKLIST: set[bytes] = set()
+#
+# Bounded LRU: a long-running Jupyter kernel can decorate thousands of
+# throwaway functions; an unbounded ``set`` would grow without limit. An
+# evicted entry just gets retested on its next call — worst case is one
+# wasted cache-write attempt before the function gets re-blacklisted.
+_PERF_BLACKLIST_CAP = 4096
+_PERF_BLACKLIST: OrderedDict[bytes, None] = OrderedDict()
+
+# Number of distinct callers tracked in ``_Session.call_graph``. Diagnostic
+# data — evicting the oldest caller when full just loses some history; the
+# graph that ``graph()`` returns to the user remains representative of recent
+# activity in a long-running session.
+_CALL_GRAPH_CAP = 8192
 _PERF_GUARD_MIN_WRITE_NS = 5_000_000
+
+
+def _perf_blacklist_add(fid: bytes) -> None:
+    """Insert ``fid`` into the perf-guard blacklist, evicting the oldest entry
+    if the cap is reached. LRU semantics: re-blacklisting an existing entry
+    moves it to the most-recently-used end."""
+    _PERF_BLACKLIST[fid] = None
+    _PERF_BLACKLIST.move_to_end(fid)
+    while len(_PERF_BLACKLIST) > _PERF_BLACKLIST_CAP:
+        _PERF_BLACKLIST.popitem(last=False)
 
 # Every wrapper registers its per-call mem_cache here so ``clear()`` can
 # wipe all tiers, not just SQLite + blobs. Plain list (not WeakSet) because
@@ -722,7 +744,12 @@ class _Session:
     purity: PurityTracker | None = None
     store: Store | None = None
     stats: SessionStats = field(default_factory=SessionStats)
-    call_graph: dict[str, set[str]] = field(default_factory=lambda: defaultdict(set))
+    # Caller→callee edges observed during ``auto()`` blocks. Diagnostic
+    # data; bounded by number of distinct callers (the dict order is
+    # insertion-order so we evict the oldest caller when over cap). Per-
+    # caller callee sets are not separately capped — a single caller can
+    # legitimately reach hundreds of callees in a real program.
+    call_graph: OrderedDict[str, set[str]] = field(default_factory=OrderedDict)
     telemetry_path: Path | None = None
     _stack: list[str] = field(default_factory=list)
 
@@ -983,7 +1010,7 @@ def _async_cache(func: Callable[..., Any]) -> Callable[..., Any]:
         # function itself, we'll never recoup the cost. Blacklist the
         # function ID and warn once.
         if write_ns > elapsed_ns and write_ns >= _PERF_GUARD_MIN_WRITE_NS and elapsed_ns > 0:
-            _PERF_BLACKLIST.add(fid)
+            _perf_blacklist_add(fid)
             log.warning(
                 "rote: blacklisting %s — encode+write %.1fms > run %.1fms",
                 qualname, write_ns / 1e6, elapsed_ns / 1e6,
@@ -1256,7 +1283,7 @@ def cache[**P, R](func: Callable[P, R]) -> Callable[P, R]:
             _leave_infra()
         write_ns = time.perf_counter_ns() - write_t0
         if write_ns > elapsed_ns and write_ns >= _PERF_GUARD_MIN_WRITE_NS and elapsed_ns > 0:
-            _PERF_BLACKLIST.add(fid)
+            _perf_blacklist_add(fid)
             log.warning(
                 "rote: blacklisting %s — encode+write %.1fms > run %.1fms",
                 qualname, write_ns / 1e6, elapsed_ns / 1e6,
@@ -1301,9 +1328,17 @@ def auto() -> Iterator[_Session]:
     def _on_event(ev: Any) -> None:
         if ev.kind.value == "call":
             sess._stack.append(ev.func_qualname or "?")
-            # Build call graph
+            # Build call graph, bounded by _CALL_GRAPH_CAP distinct callers.
             if len(sess._stack) >= 2:
-                sess.call_graph[sess._stack[-2]].add(sess._stack[-1])
+                caller = sess._stack[-2]
+                callee = sess._stack[-1]
+                if caller in sess.call_graph:
+                    sess.call_graph[caller].add(callee)
+                    sess.call_graph.move_to_end(caller)
+                else:
+                    sess.call_graph[caller] = {callee}
+                    while len(sess.call_graph) > _CALL_GRAPH_CAP:
+                        sess.call_graph.popitem(last=False)
         elif ev.kind.value in ("return", "raise"):
             sess._stack.pop() if sess._stack else None
 
@@ -1388,7 +1423,7 @@ def _reset_for_testing() -> None:
     sess = _get_session()
     sess.reset_session()
     sess.stats = SessionStats()
-    sess.call_graph = defaultdict(set)
+    sess.call_graph = OrderedDict()
     if sess.store is not None:
         sess.store.close()
         sess.store = None
