@@ -667,6 +667,12 @@ _MEM_CACHE_LIMIT = 256
 _PERF_BLACKLIST: set[bytes] = set()
 _PERF_GUARD_MIN_WRITE_NS = 5_000_000
 
+# Every wrapper registers its per-call mem_cache here so ``clear()`` can
+# wipe all tiers, not just SQLite + blobs. Plain list (not WeakSet) because
+# OrderedDict isn't weakref-able; we accept the per-wrapper ref leak as
+# bounded by the number of distinct decorated functions in a process.
+_ALL_MEM_CACHES: list[OrderedDict[Any, Any]] = []
+
 
 def _mem_set(
     mem: OrderedDict[bytes, tuple[Any, str, str, int, list[str], bytes | None]],
@@ -788,6 +794,7 @@ def _async_cache(func: Callable[..., Any]) -> Callable[..., Any]:
     mem_cache: OrderedDict[
         bytes, tuple[Any, str, str, int, list[str], bytes | None]
     ] = OrderedDict()
+    _ALL_MEM_CACHES.append(mem_cache)
     signature_cache = _signature_cache(func)
     cached_fid: bytes | None = None
     static_impurity: list[str] | None = None
@@ -1024,6 +1031,7 @@ def cache[**P, R](func: Callable[P, R]) -> Callable[P, R]:
     mem_cache: OrderedDict[
         bytes, tuple[Any, str, str, int, list[str], bytes | None]
     ] = OrderedDict()
+    _ALL_MEM_CACHES.append(mem_cache)
     signature_cache = _signature_cache(func)
     # Computed lazily on first call so siblings have a chance to be wrapped
     # in their globals before we walk transitively.
@@ -1346,7 +1354,11 @@ def invalidate(target: Callable[..., Any] | str | None = None) -> int:
 
 
 def clear() -> int:
-    """Wipe all cached entries. Returns the number of entries removed."""
+    """Wipe all cached entries from every tier (per-wrapper in-memory LRUs,
+    SQLite index, and on-disk blobs). Returns the number of SQLite entries
+    removed."""
+    for mem in _ALL_MEM_CACHES:
+        mem.clear()
     return _get_session().ensure_store().clear()
 
 
