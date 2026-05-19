@@ -98,13 +98,3 @@ def install() -> None:
     sys.meta_path.insert(0, _installed_finder)
 
 
-def uninstall() -> None:
-    """Remove the import hook (mostly for tests)."""
-    global _installed_finder
-    if _installed_finder is None:
-        return
-    import contextlib
-
-    with contextlib.suppress(ValueError):
-        sys.meta_path.remove(_installed_finder)
-    _installed_finder = None

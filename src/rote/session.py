@@ -40,7 +40,7 @@ from .purity import (
     file_dep_hash,
     mutable_value_names,
 )
-from .serialize import decode, encode, fingerprint
+from .serialize import _hash, decode, encode, fingerprint
 from .store import Store
 from .trace import Tracer
 
@@ -484,8 +484,6 @@ def _global_deps_fingerprint(
             parts.append(label + b"=" + _dependency_value_fingerprint(attr_val))
     if not parts:
         return b""
-    from .serialize import _hash  # type: ignore[attr-defined]
-
     return _hash(b"\0".join(parts))
 
 

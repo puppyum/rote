@@ -35,12 +35,6 @@ class Config:
     # Whether to write a per-session telemetry log (Layer C instrumentation).
     telemetry: bool = True
 
-    # Whether the automatic mode should monkey-patch the import system.
-    install_import_hook: bool = True
-
-    # Verbose logging to stderr.
-    verbose: bool = False
-
     # If True, cache writes are skipped (useful for benchmarking pure tracer overhead).
     read_only: bool = False
 

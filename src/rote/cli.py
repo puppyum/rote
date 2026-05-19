@@ -23,7 +23,7 @@ def _cmd_run(args: argparse.Namespace) -> int:
     if not script.exists():
         print(f"rote: script not found: {script}", file=sys.stderr)
         return 2
-    configure(cache_dir=Path(args.cache_dir), verbose=args.verbose)
+    configure(cache_dir=Path(args.cache_dir))
     sys.argv = [str(script), *args.script_args]
     sys.path.insert(0, str(script.parent))
     # Install the import hook so any user-code module the script imports

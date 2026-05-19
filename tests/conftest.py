@@ -24,8 +24,6 @@ def _isolated_cache(tmp_path: Path) -> Path:
         read_only=False,
         fsync_writes=True,
         eager_hit_counters=True,
-        verbose=False,
-        install_import_hook=True,
     )
     session._reset_for_testing()
     yield cache_dir
