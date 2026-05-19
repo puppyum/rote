@@ -76,8 +76,8 @@ def test_async_function_stdout_replay():
         for _ in range(3):
             await chatty(7)
 
-    import io as _io
     import contextlib as _contextlib
+    import io as _io
 
     buf = _io.StringIO()
     with _contextlib.redirect_stdout(buf):

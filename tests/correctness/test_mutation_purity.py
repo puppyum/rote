@@ -19,8 +19,6 @@ import sys
 from contextlib import contextmanager
 from pathlib import Path
 
-import pytest
-
 from rote import _impure_stdlib
 
 CORPUS = Path(__file__).resolve().parents[2] / "corpus"

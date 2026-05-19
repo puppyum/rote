@@ -21,8 +21,9 @@ def test_load_ipython_extension_requires_ipython():
 
     if importlib.util.find_spec("IPython") is not None:
         return  # IPython is installed; nothing to test
-    import rote.jupyter as j
     import pytest
+
+    import rote.jupyter as j
 
     with pytest.raises(ImportError):
         j.load_ipython_extension(None)

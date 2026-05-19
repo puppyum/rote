@@ -7,9 +7,6 @@ import os
 import subprocess
 import sys
 import time
-from pathlib import Path
-
-import pytest
 
 ROTE = [sys.executable, "-m", "rote.cli"]
 ENV = {**os.environ, "ROTE_MIN_DURATION_S": "0"}

@@ -7,13 +7,9 @@ This is THE headline-feature test. If it fails, the no-decorator promise is brok
 from __future__ import annotations
 
 import os
-import shutil
 import subprocess
 import sys
 import time
-from pathlib import Path
-
-import pytest
 
 ROTE = [sys.executable, "-m", "rote.cli"]
 ENV = {**os.environ, "ROTE_MIN_DURATION_S": "0"}

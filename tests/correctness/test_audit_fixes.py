@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import threading
 import time
-from pathlib import Path
 
 import pytest
 
@@ -229,8 +228,10 @@ def test_concurrent_cached_calls_dont_cross_attribute_deps(tmp_path):
 
     t0 = threading.Thread(target=worker, args=(0,))
     t1 = threading.Thread(target=worker, args=(1,))
-    t0.start(); t1.start()
-    t0.join(); t1.join()
+    t0.start()
+    t1.start()
+    t0.join()
+    t1.join()
 
     assert results == {0: {"0"}, 1: {"1"}}, (
         f"thread isolation broken: {results}"

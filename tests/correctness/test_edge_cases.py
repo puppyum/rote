@@ -13,9 +13,7 @@ from __future__ import annotations
 
 import math
 import os
-import sys
 import threading
-from pathlib import Path
 
 import numpy as np
 import pytest
@@ -135,7 +133,8 @@ def test_very_large_return_blocked_by_size_limit():
         def f():
             return list(range(1000))  # serializes to way more than 100 bytes
 
-        f(); f()
+        f()
+        f()
         stats = rote.stats()
         assert stats["too_big_skips"] >= 1
     finally:
@@ -169,7 +168,9 @@ def test_nested_cache_does_not_double_wrap():
         calls["n"] += 1
         return x
 
-    f(1); f(1); f(1)
+    f(1)
+    f(1)
+    f(1)
     # Should still produce the correct value; ideally only one body call.
     assert f(1) == 1
 
@@ -265,8 +266,10 @@ def test_two_threads_same_function_same_args_no_race():
         results[i] = f(13)
 
     threads = [threading.Thread(target=worker, args=(i,)) for i in range(2)]
-    for t in threads: t.start()
-    for t in threads: t.join()
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
     assert results == [91, 91]
 
 
@@ -342,7 +345,9 @@ def test_min_duration_threshold_skips_fast_calls():
     def fast(x):
         return x
 
-    fast(1); fast(2); fast(3)
+    fast(1)
+    fast(2)
+    fast(3)
     stats = rote.stats()
     assert stats["too_fast_skips"] >= 3
 

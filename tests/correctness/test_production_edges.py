@@ -3,8 +3,6 @@ weak refs, recursive auto-mode, multiple decorators."""
 
 from __future__ import annotations
 
-import sys
-
 import pytest
 
 import rote
@@ -187,7 +185,8 @@ def test_clear_then_continue_works():
     def f(x):
         return x + 1
 
-    f(1); f(1)
+    f(1)
+    f(1)
     rote.clear()
     # Should still work post-clear.
     assert f(1) == 2
@@ -199,10 +198,11 @@ def test_clear_then_continue_works():
 
 def test_autowrap_on_syntax_error_falls_back():
     """If the user script has a syntax error, the transform must not eat it."""
+    import contextlib
+
     from rote.autowrap import transform
 
     bad = "def f(:\n    return 1\n"
-    try:
+    with contextlib.suppress(Exception):
+        # transform may raise; that's fine — Python will report the syntax error
         transform(bad)
-    except Exception:
-        pass  # transform may raise; that's fine — Python will report the syntax error

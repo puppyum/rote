@@ -48,19 +48,22 @@ def _list_dir(d):
 
 def test_function_calling_time_time_is_not_cached():
     """time.time() is on the impure list — calls into it must skip the write."""
-    _stamped(); _stamped()
+    _stamped()
+    _stamped()
     stats = rote.stats()
     assert stats["impure_skips"] >= 1, f"expected impure_skip; got {stats}"
 
 
 def test_function_calling_random_is_not_cached():
-    _rng(); _rng()
+    _rng()
+    _rng()
     stats = rote.stats()
     assert stats["impure_skips"] >= 1
 
 
 def test_function_using_os_environ_is_not_cached():
-    _env_dep(); _env_dep()
+    _env_dep()
+    _env_dep()
     stats = rote.stats()
     # os.environ is in IMPURE_SYMBOLS; the static check catches the LOAD_ATTR.
     assert stats["impure_skips"] >= 1
@@ -83,7 +86,8 @@ def test_pure_math_function_is_still_cached():
 def test_function_calling_os_listdir_is_not_cached(tmp_path):
     (tmp_path / "a").write_text("")
     (tmp_path / "b").write_text("")
-    _list_dir(str(tmp_path)); _list_dir(str(tmp_path))
+    _list_dir(str(tmp_path))
+    _list_dir(str(tmp_path))
     stats = rote.stats()
     assert stats["impure_skips"] >= 1, f"os.listdir not flagged: {stats}"
 
