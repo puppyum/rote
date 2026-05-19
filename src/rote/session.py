@@ -114,7 +114,25 @@ def _audit_record_file_io(event: str, args: tuple[Any, ...]) -> None:
         wstack[-1].append(path_str)
 
 
-sys.addaudithook(_audit_record_file_io)
+# Audit hook installation is deferred. PEP 578 hooks fire on every
+# file open / socket call / exec for the rest of the process lifetime
+# and cannot be removed. ``import rote`` should be free; we register
+# only when the user actually decorates something or enters ``auto()``.
+_audit_hooks_installed = False
+_audit_hooks_lock = _threading.Lock()
+
+
+def _ensure_audit_hooks() -> None:
+    """Install audit hooks on first use. Idempotent and thread-safe."""
+    global _audit_hooks_installed
+    if _audit_hooks_installed:
+        return
+    with _audit_hooks_lock:
+        if _audit_hooks_installed:
+            return
+        sys.addaudithook(_audit_record_file_io)
+        sys.addaudithook(_audit_check_impurity)
+        _audit_hooks_installed = True
 
 
 # Per-call impurity reasons collected for the in-flight memoized call. Each
@@ -194,9 +212,6 @@ def _audit_caller_in_library() -> bool:
             return False  # found a user frame
         f = f.f_back
     return True
-
-
-sys.addaudithook(_audit_check_impurity)
 
 
 # Lightweight sys.monitoring tool for the @cache decorator path. Uses
@@ -990,6 +1005,8 @@ def cache[**P, R](func: Callable[P, R]) -> Callable[P, R]:
     # ``@rote.cache @classmethod def f(...)``, ``func`` is the descriptor,
     # not a plain function. Unwrap, recursively cache the underlying function,
     # then re-wrap so the descriptor protocol still works on the class.
+    _ensure_audit_hooks()
+
     if isinstance(func, (classmethod, staticmethod)):
         inner = func.__func__
         wrapped_inner = cache(inner)  # type: ignore[arg-type]
@@ -1260,6 +1277,7 @@ def auto() -> Iterator[_Session]:
     :attr:`Config.min_duration_s` and whose purity tracker reports no impurity
     get cached.
     """
+    _ensure_audit_hooks()
     sess = _get_session()
     if sess.tracer is not None:
         # Already inside an auto() block — nesting is a no-op.
@@ -1272,18 +1290,8 @@ def auto() -> Iterator[_Session]:
     sess.purity = PurityTracker(tracer)
     sess.ensure_store()
 
-    # Per-call accumulator. Keyed by frame depth so we can match RETURN to CALL.
-    call_state: dict[int, tuple[str, int, bytes, dict[str, bytes]]] = {}
-
     def _on_event(ev: Any) -> None:
         if ev.kind.value == "call":
-            # Record entry time + qualname; arg fingerprints handled by decorator path.
-            call_state[ev.depth] = (
-                ev.func_qualname or "?",
-                ev.t_ns,
-                b"",
-                {},
-            )
             sess._stack.append(ev.func_qualname or "?")
             # Build call graph
             if len(sess._stack) >= 2:
