@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+*.egg
+.eggs/
+pip-wheel-metadata/
+
+# Virtual envs
+.venv/
+venv/
+env/
+
+# Test / coverage / mutation artifacts
+.pytest_cache/
+.hypothesis/
+.benchmarks/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+mutants/
+
+# Linting / typing
+.ruff_cache/
+.mypy_cache/
+
+# rote cache directory (the package writes here at runtime)
+.rote/
+.incpy2/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+*.swp
+
+# Local notes / scratch
+QUESTIONS.md
+CODEX_REVIEW_NOTES.md
+CODEX_REVIEW_PROMPT.md
+c07.csv
+
+# Paper PDF (copyright — keep local, don't redistribute)
+*.pdf

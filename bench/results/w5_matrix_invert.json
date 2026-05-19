@@ -1,0 +1,11 @@
+{
+  "workload": "w5_matrix_invert",
+  "plain_cold": 0.0012434579548425972,
+  "plain_warm": 0.0005902089760638773,
+  "rote_cold": 0.013433124986477196,
+  "rote_warm": 4.954100586473942e-05,
+  "joblib_cold": 0.0017071250476874411,
+  "joblib_warm": 9.066704660654068e-05,
+  "rote_speedup_vs_joblib_warm": 1.8301414156605271,
+  "rote_cold_overhead": 9.80303916522664
+}

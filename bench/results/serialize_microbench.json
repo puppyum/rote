@@ -1,0 +1,52 @@
+[
+  {
+    "name": "numpy_1M_f64",
+    "serializer": "numpy",
+    "size_mb": 7.6295166015625,
+    "pickle_size_mb": 7.6295270919799805,
+    "incpy2_write_ms": 1.1085000005550683,
+    "incpy2_read_ms": 0.5849999724887311,
+    "pickle_write_ms": 0.7641660049557686,
+    "pickle_read_ms": 0.23320800391957164
+  },
+  {
+    "name": "numpy_3M_f32",
+    "serializer": "numpy",
+    "size_mb": 11.4442138671875,
+    "pickle_size_mb": 11.44422435760498,
+    "incpy2_write_ms": 0.7770420052111149,
+    "incpy2_read_ms": 0.9166250238195062,
+    "pickle_write_ms": 1.900915987789631,
+    "pickle_read_ms": 0.4675830132327974
+  },
+  {
+    "name": "arrow_1M_rows",
+    "serializer": "arrow",
+    "size_mb": 15.259147644042969,
+    "pickle_size_mb": 15.259162902832031,
+    "incpy2_write_ms": 3.315665991976857,
+    "incpy2_read_ms": 0.4609999596141279,
+    "pickle_write_ms": 5.424166971351951,
+    "pickle_read_ms": 0.4359169979579747
+  },
+  {
+    "name": "dict_100k_items",
+    "serializer": "msgpack",
+    "size_mb": 1.0084524154663086,
+    "pickle_size_mb": 1.1996736526489258,
+    "incpy2_write_ms": 70.06366603309289,
+    "incpy2_read_ms": 65.93575002625585,
+    "pickle_write_ms": 28.059542004484683,
+    "pickle_read_ms": 23.499707982409745
+  },
+  {
+    "name": "list_1M_ints",
+    "serializer": "msgpack",
+    "size_mb": 4.643010139465332,
+    "pickle_size_mb": 4.645683288574219,
+    "incpy2_write_ms": 391.91108400700614,
+    "incpy2_read_ms": 26.055665977764875,
+    "pickle_write_ms": 12.508333020377904,
+    "pickle_read_ms": 26.864957995712757
+  }
+]

@@ -1,0 +1,11 @@
+{
+  "workload": "w4_count_words",
+  "plain_cold": 0.004203540971502662,
+  "plain_warm": 0.0037409589858725667,
+  "rote_cold": 0.009988083969801664,
+  "rote_warm": 2.9166985768824816e-05,
+  "joblib_cold": 0.004559250024612993,
+  "joblib_warm": 8.870800957083702e-05,
+  "rote_speedup_vs_joblib_warm": 3.0413841962940418,
+  "rote_cold_overhead": 1.3761119583500032
+}

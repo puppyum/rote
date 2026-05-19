@@ -1,0 +1,12 @@
+{
+  "workload": "paper_pipeline_edit_downstream",
+  "n_records": 200000,
+  "plain_v1_s": 0.27484720799839124,
+  "plain_v2_s": 0.22114437498385087,
+  "rote_cold_s": 0.28221162501722574,
+  "rote_warm_edit_downstream_s": 0.00469804200110957,
+  "rote_warm_speedup_vs_plain": 47.071604496430986,
+  "joblib_cold_s": 0.21346649999031797,
+  "joblib_warm_edit_downstream_s": 0.0014675830025225878,
+  "rote_vs_joblib_warm": 0.3123818395356998
+}

@@ -1,0 +1,11 @@
+{
+  "workload": "w1_compute_pi",
+  "plain_cold": 0.616222457960248,
+  "plain_warm": 0.5659587499685585,
+  "rote_cold": 0.5662207499844953,
+  "rote_warm": 3.095902502536774e-05,
+  "joblib_cold": 0.5670503749861382,
+  "joblib_warm": 9.358295938000083e-05,
+  "rote_speedup_vs_joblib_warm": 3.0228005986402744,
+  "rote_cold_overhead": -0.08114230069001838
+}

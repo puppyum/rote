@@ -1,0 +1,118 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "rote"
+version = "0.1.0"
+description = "Automatic, dependency-aware memoization for Python — a modern pure-Python reimplementation of IncPy (Guo & Engler, ISSTA 2011)."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Luna" }]
+keywords = ["memoization", "caching", "incremental", "research", "pipeline"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+    "libcst>=1.1",
+    "blake3>=0.4",
+    "cloudpickle>=3.0",
+    "msgpack>=1.0",
+    "networkx>=3.0",
+]
+
+[project.optional-dependencies]
+arrow = ["pyarrow>=14.0"]
+numpy = ["numpy>=1.26"]
+ml = ["safetensors>=0.4", "pyarrow>=14.0", "numpy>=1.26"]
+all = ["pyarrow>=14.0", "numpy>=1.26", "safetensors>=0.4"]
+dev = [
+    "pytest>=8.0",
+    "pytest-xdist>=3.5",
+    "pytest-benchmark>=4.0",
+    "pytest-cov>=4.1",
+    "hypothesis>=6.100",
+    "ruff>=0.5",
+    "mypy>=1.10",
+]
+
+[project.scripts]
+rote = "rote.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/puppyum/rote"
+Documentation = "https://github.com/puppyum/rote/blob/main/README.md"
+Issues = "https://github.com/puppyum/rote/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/rote"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+ignore = ["E501", "B007", "B904", "SIM117", "UP038"]
+# E501: line length handled by formatter
+# B007: unused loop variable (deliberate in cleanup loops)
+# B904: blind raise (we have intentional re-raises)
+# SIM117: nested with-statements (clearer when separated)
+# UP038: isinstance with tuple — modern Python supports it, no rewrite needed
+# N rules disabled: libcst transformer methods are CamelCase by API contract
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unused_ignores = true
+warn_return_any = true
+no_implicit_reexport = false
+disallow_untyped_decorators = false
+
+[[tool.mypy.overrides]]
+module = [
+    "blake3", "libcst", "libcst.*", "cloudpickle", "msgpack",
+    "pyarrow", "pyarrow.*",
+    "safetensors", "safetensors.*",
+    "polars", "polars.*",
+    "torch", "torch.*",
+    "networkx", "networkx.*",
+    "pandas", "pandas.*",
+    "numpy", "numpy.*",
+]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
+    "rote.serialize", "rote.session", "rote.identity",
+    "rote.purity", "rote.jupyter", "rote.import_hook",
+]
+# Optional dep dispatch + libcst transformer signatures: many ignores are
+# conditional on import success or specific to library shape. Jupyter's
+# IPython.core.magic decorators are not typed.
+warn_unused_ignores = false
+disallow_untyped_decorators = false
+
+[[tool.mypy.overrides]]
+module = ["IPython", "IPython.*"]
+ignore_missing_imports = true
+
+[tool.mutmut]
+paths_to_mutate = ["src/rote/_impure_stdlib.py", "src/rote/purity.py"]
+runner = "pytest tests/unit/test_purity.py tests/property -x -q --tb=no -p no:cacheprovider"
+backup = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+markers = [
+    "slow: marks tests as slow",
+    "concurrency: marks tests that use multiple processes",
+    "bench: marks benchmark tests",
+]
