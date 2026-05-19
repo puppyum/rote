@@ -26,7 +26,7 @@ import inspect
 import linecache
 import textwrap
 from collections.abc import Callable
-from types import FunctionType, MethodType, ModuleType
+from types import FunctionType, MethodType
 from typing import Any
 
 import libcst as cst
@@ -488,17 +488,3 @@ def transitive_function_ids(func: Callable[..., Any], _seen: set[int] | None = N
     return composite_id(*parts)
 
 
-# --------------------------------------------------------- Module helpers
-
-
-def module_source_hash(mod: ModuleType) -> bytes:
-    """Hash a module's source file. Used as a coarse global-dep signal."""
-    path = getattr(mod, "__file__", None)
-    if not path:
-        return _hash(getattr(mod, "__name__", "<anon>").encode())
-    try:
-        with open(path, "rb") as f:
-            data = f.read()
-    except OSError:
-        return _hash(path.encode())
-    return _hash(data)

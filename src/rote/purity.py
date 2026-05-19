@@ -23,7 +23,6 @@ from types import CodeType
 from typing import Any
 
 from . import _impure_stdlib
-from .serialize import fingerprint
 from .trace import EventKind, TraceEvent, Tracer
 
 
@@ -90,8 +89,6 @@ class PurityTracker:
     # ----- call lifecycle
 
     def _on_call(self, ev: TraceEvent) -> None:
-        # We can't capture arg values cheaply from sys.monitoring directly —
-        # callers wire those in via attach_args() before the call body runs.
         if ev.code is None:  # defensive
             return
         frame = CallFrame(
@@ -109,11 +106,6 @@ class PurityTracker:
             for f in self.stack:
                 f.impure_reasons.append(f"transitively calls impure: {dotted}")
         self.stack.append(frame)
-
-    def attach_args(self, arg_fingerprints: dict[str, bytes]) -> None:
-        """Called by the session layer once arg fingerprints are computed."""
-        if self.stack:
-            self.stack[-1].arg_fingerprints = arg_fingerprints
 
     def _on_return(self, ev: TraceEvent) -> None:
         if not self.stack:
@@ -134,9 +126,6 @@ class PurityTracker:
             file_write_deps=sorted(frame.file_writes_closed),
         )
         self.verdicts[id(frame.code)] = verdict
-
-    def pop_verdict_for(self, code: CodeType) -> Verdict | None:
-        return self.verdicts.pop(id(code), None)
 
     # ----- audit-hook plumbing
 
@@ -160,26 +149,6 @@ class PurityTracker:
         for f in self.stack:
             f.impure_reasons.append(reason)
 
-    # ----- close detection
-
-    def note_close(self, path: str) -> None:
-        """The session layer can call this when it detects a file close.
-
-        We rely on this signal because PEP 578 does not provide a "close" audit
-        event. The session layer wraps :func:`open` to capture closes via the
-        returned file's ``__exit__`` / ``close``.
-        """
-        if not self.stack:
-            return
-        top = self.stack[-1]
-        if path in top.file_writes_open:
-            mode = top.file_writes_open.pop(path)
-            # Self-contained (open → write → close in same function), not
-            # append: still pure with a write dependency. Paper §3.3.1.
-            if "a" not in mode:
-                top.file_writes_closed.append(path)
-
-
 # ----------------------------------------------------- Public convenience
 
 
@@ -196,33 +165,6 @@ def _is_definitely_immutable(value: Any) -> bool:
     return False
 
 
-def compute_arg_fingerprints(args: tuple[Any, ...], kwargs: dict[str, Any]) -> dict[str, bytes]:
-    """Return a stable dict of ``param_name → fingerprint``."""
-    out: dict[str, bytes] = {}
-    for i, a in enumerate(args):
-        out[f"arg{i}"] = fingerprint(a)
-    for k, v in kwargs.items():
-        out[k] = fingerprint(v)
-    return out
-
-
-def mutable_arg_names(args: tuple[Any, ...], kwargs: dict[str, Any]) -> set[str]:
-    """Return the subset of arg names that could possibly mutate.
-
-    Used by the cache wrapper to skip the exit-time re-fingerprint on args
-    that are definitely immutable (ints, strs, bytes, tuples-of-immutables…).
-    Saves a serialize pass on every call.
-    """
-    out: set[str] = set()
-    for i, a in enumerate(args):
-        if not _is_definitely_immutable(a):
-            out.add(f"arg{i}")
-    for k, v in kwargs.items():
-        if not _is_definitely_immutable(v):
-            out.add(k)
-    return out
-
-
 def mutable_value_names(values: dict[str, Any]) -> set[str]:
     """Return names whose bound values could possibly mutate."""
     return {k for k, v in values.items() if not _is_definitely_immutable(v)}
@@ -236,10 +178,6 @@ def args_changed(before: dict[str, bytes], after: dict[str, bytes]) -> list[str]
             changed.append(k)
     return changed
 
-
-# Historical compatibility knob. File dependencies are now always content
-# hashed; stale cache hits are worse than re-reading a large dependency.
-_CONTENT_HASH_LIMIT = 16 * 1024 * 1024
 
 _ContentHashKey = tuple[str, int, int, int, int, int]
 _CONTENT_HASH_CACHE: dict[_ContentHashKey, bytes] = {}

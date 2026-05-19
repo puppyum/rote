@@ -104,11 +104,9 @@ def test_async_write_dependency_revalidated_from_memory_cache(tmp_path: Path) ->
 
 def test_file_dependency_uses_content_when_size_and_mtime_match(
     tmp_path: Path,
-    monkeypatch: Any,
 ) -> None:
     from rote import purity
 
-    monkeypatch.setattr(purity, "_CONTENT_HASH_LIMIT", 1)
     purity._CONTENT_HASH_CACHE.clear()
 
     data_path = tmp_path / "data.txt"
