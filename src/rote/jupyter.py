@@ -35,7 +35,7 @@ def load_ipython_extension(ipython: Any) -> None:
     )
 
     @magics_class
-    class IncpyMagics(Magics):  # type: ignore[misc]
+    class RoteMagics(Magics):  # type: ignore[misc]
         @line_magic
         def rote_stats(self, line: str) -> None:  # noqa: ARG002
             print(json.dumps(stats(), indent=2))
@@ -74,7 +74,7 @@ def load_ipython_extension(ipython: Any) -> None:
                 exec(compile(transformed, "<cell>", "exec"), user_ns)
             return None
 
-    ipython.register_magics(IncpyMagics)
+    ipython.register_magics(RoteMagics)
     # Auto-wrap every cell from now on (the headline experience).
     _install_pre_run_hook(ipython)
 

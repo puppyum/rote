@@ -93,13 +93,13 @@ def test_paper_pipeline_edit_downstream(tmp_path):
     from rote import session as _sess
 
     _sess._reset_for_testing()
-    rote.configure(cache_dir=tmp_path / "i", min_duration_s=0.0)
-    ip_synth = rote.cache(stage_a_synth)
-    ip_summary = rote.cache(stage_b_summary)
-    ip_v1 = rote.cache(stage_c_format_v1)
-    ip_v2 = rote.cache(stage_c_format_v2)
-    ip_cold, _ = _pipeline(ip_synth, ip_summary, ip_v1, data_path, summary_path)
-    ip_warm, ip_warm_out = _pipeline(ip_synth, ip_summary, ip_v2, data_path, summary_path)
+    rote.configure(cache_dir=tmp_path / "rote", min_duration_s=0.0)
+    rote_synth = rote.cache(stage_a_synth)
+    rote_summary = rote.cache(stage_b_summary)
+    rote_v1 = rote.cache(stage_c_format_v1)
+    rote_v2 = rote.cache(stage_c_format_v2)
+    rote_cold, _ = _pipeline(rote_synth, rote_summary, rote_v1, data_path, summary_path)
+    rote_warm, rote_warm_out = _pipeline(rote_synth, rote_summary, rote_v2, data_path, summary_path)
     print("---rote stats---")
     print(json.dumps(rote.stats(), indent=2))
 
@@ -119,12 +119,12 @@ def test_paper_pipeline_edit_downstream(tmp_path):
         "n_records": N_RECORDS,
         "plain_v1_s": plain_v1,
         "plain_v2_s": plain_v2,
-        "rote_cold_s": ip_cold,
-        "rote_warm_edit_downstream_s": ip_warm,
-        "rote_warm_speedup_vs_plain": plain_v2 / max(ip_warm, 1e-9),
+        "rote_cold_s": rote_cold,
+        "rote_warm_edit_downstream_s": rote_warm,
+        "rote_warm_speedup_vs_plain": plain_v2 / max(rote_warm, 1e-9),
         "joblib_cold_s": jl_cold,
         "joblib_warm_edit_downstream_s": jl_warm,
-        "rote_vs_joblib_warm": jl_warm / max(ip_warm, 1e-9),
+        "rote_vs_joblib_warm": jl_warm / max(rote_warm, 1e-9),
     }
     print(json.dumps(result, indent=2))
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
@@ -132,12 +132,12 @@ def test_paper_pipeline_edit_downstream(tmp_path):
 
     # Correctness
     assert out_v1 != out_v2
-    assert ip_warm_out == out_v2
+    assert rote_warm_out == out_v2
 
     # Paper claim: edit-downstream warm run skips the upstream cost.
     # Even allowing 50% slack for serialization overhead, the warm run
     # should beat plain Python by a healthy margin since stages a + b
     # (~80% of plain runtime) are cached.
-    assert ip_warm < plain_v2 * 0.5, (
-        f"rote warm-edit-downstream not faster: warm={ip_warm:.3f}s vs plain={plain_v2:.3f}s"
+    assert rote_warm < plain_v2 * 0.5, (
+        f"rote warm-edit-downstream not faster: warm={rote_warm:.3f}s vs plain={plain_v2:.3f}s"
     )

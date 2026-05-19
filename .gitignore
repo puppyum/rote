@@ -32,7 +32,6 @@ mutants/
 
 # rote cache directory (the package writes here at runtime)
 .rote/
-.incpy2/
 
 # IDE / OS
 .vscode/

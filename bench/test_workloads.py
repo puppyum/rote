@@ -107,7 +107,7 @@ def test_bench_workload(name, fn, arg, tmp_path):
     # rote
     rote.configure(cache_dir=tmp_path / "rote", min_duration_s=0.0)
     rote_fn = rote.cache(fn)
-    incpy_cold, incpy_warm = _time_two_runs(rote_fn, arg)
+    rote_cold, rote_warm = _time_two_runs(rote_fn, arg)
     # joblib
     mem = Memory(tmp_path / "joblib", verbose=0)
     joblib_fn = mem.cache(fn)
@@ -117,12 +117,12 @@ def test_bench_workload(name, fn, arg, tmp_path):
         "workload": name,
         "plain_cold": plain_cold,
         "plain_warm": plain_warm,
-        "rote_cold": incpy_cold,
-        "rote_warm": incpy_warm,
+        "rote_cold": rote_cold,
+        "rote_warm": rote_warm,
         "joblib_cold": jl_cold,
         "joblib_warm": jl_warm,
-        "rote_speedup_vs_joblib_warm": jl_warm / max(incpy_warm, 1e-9),
-        "rote_cold_overhead": (incpy_cold - plain_cold) / max(plain_cold, 1e-9),
+        "rote_speedup_vs_joblib_warm": jl_warm / max(rote_warm, 1e-9),
+        "rote_cold_overhead": (rote_cold - plain_cold) / max(plain_cold, 1e-9),
     }
     out_file = RESULTS_DIR / f"{name}.json"
     out_file.write_text(json.dumps(result, indent=2))
