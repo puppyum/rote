@@ -1,0 +1,45 @@
+---
+// Acknowledgement banner. Above the fold, above the nav, no nav competing
+// for attention. The first paragraph names the paper; the demo follows.
+---
+
+<header class="border-b hairline bg-[var(--color-page-dark)]">
+  <div class="container-wide py-10 md:py-14">
+    <p class="cite mb-2">incpy → rote · companion site</p>
+    <h1 class="font-serif text-3xl leading-[1.15] tracking-tight md:text-[2.6rem]">
+      This is a reimplementation of <em>IncPy</em>
+      <span class="block text-[var(--color-ink-soft)]">
+        (Guo &amp; Engler, ISSTA 2011). The core idea is theirs.
+      </span>
+    </h1>
+    <p class="mt-5 max-w-3xl text-base text-[var(--color-ink-soft)] md:text-lg">
+      The visualisations below show how the same design behaves on contemporary Python, and
+      where we had to diverge. Every number traces back to a benchmark JSON in <code>bench/results/</code>;
+      every design call cites a paper section.
+    </p>
+  </div>
+</header>
+<nav
+  class="sticky top-0 z-20 border-b hairline bg-[color:var(--color-page)]/85 backdrop-blur-sm"
+  aria-label="Section nav"
+>
+  <div class="container-wide flex items-center justify-between py-3">
+    <span class="cite">rote · paper companion</span>
+    <ul class="hidden gap-5 text-sm text-[var(--color-ink-soft)] md:flex">
+      <li><a href="#loop" class="hover:text-[var(--color-rote)]">edit-rerun</a></li>
+      <li><a href="#delta" class="hover:text-[var(--color-rote)]">what changed</a></li>
+      <li><a href="#speed" class="hover:text-[var(--color-rote)]">how it measures up</a></li>
+      <li><a href="#serializer" class="hover:text-[var(--color-rote)]">serializer</a></li>
+      <li><a href="#graph" class="hover:text-[var(--color-rote)]">call graph</a></li>
+      <li><a href="#gates" class="hover:text-[var(--color-rote)]">purity gates</a></li>
+      <li><a href="#try" class="hover:text-[var(--color-rote)]">try it</a></li>
+    </ul>
+    <a
+      href="https://github.com/puppyum/rote"
+      class="pill hover:bg-white/70"
+      aria-label="Open the rote repository on GitHub"
+    >
+      puppyum/rote
+    </a>
+  </div>
+</nav>

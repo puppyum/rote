@@ -1,0 +1,153 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans:
+    'Geist Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', sans-serif;
+  --font-serif: 'Source Serif 4', 'Source Serif Pro', Newsreader, Georgia, ui-serif, serif;
+  --font-mono:
+    'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+
+  /* Warm not-quite-cream. Easier on the author's eyes than #fff. */
+  --color-page: #faf6ee;
+  --color-page-dark: #f3ecdc;
+  --color-ink: #1e1a14;
+  --color-ink-soft: #4b4537;
+  --color-ink-faint: #807762;
+  --color-rule: #d8cfb9;
+  --color-rule-soft: #ece4cd;
+
+  /* Paper side / rote side accents. Used in the side-by-side widgets.
+     Author's-eye check: muted, not neon. */
+  --color-paper: #7a5b2b;
+  --color-paper-soft: #c8a965;
+  --color-rote: #2c5d4a;
+  --color-rote-soft: #6da38b;
+  --color-warn: #9b4233;
+}
+
+@layer base {
+  :root {
+    color-scheme: light;
+    accent-color: var(--color-rote);
+  }
+
+  html {
+    background: var(--color-page);
+    color: var(--color-ink);
+    font-family: var(--font-serif);
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings:
+      'kern' 1,
+      'liga' 1,
+      'calt' 1;
+  }
+
+  body {
+    font-feature-settings:
+      'kern' 1,
+      'liga' 1,
+      'calt' 1;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-sans);
+    letter-spacing: -0.02em;
+    color: var(--color-ink);
+  }
+
+  code,
+  kbd,
+  pre,
+  samp,
+  .tabular {
+    font-family: var(--font-mono);
+    font-feature-settings:
+      'tnum' 1,
+      'zero' 1;
+  }
+
+  ::selection {
+    background: rgba(45, 93, 74, 0.18);
+  }
+
+  /* Honour reduced motion for the heavy widgets. */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  .container-prose {
+    max-width: 64rem;
+    margin-inline: auto;
+    padding-inline: 1.5rem;
+  }
+
+  .container-wide {
+    max-width: 78rem;
+    margin-inline: auto;
+    padding-inline: 1.5rem;
+  }
+
+  .num {
+    font-family: var(--font-mono);
+    font-feature-settings:
+      'tnum' 1,
+      'zero' 1;
+  }
+
+  .hairline {
+    border-color: var(--color-rule);
+  }
+
+  .hairline-soft {
+    border-color: var(--color-rule-soft);
+  }
+
+  .cite {
+    color: var(--color-ink-faint);
+    font-family: var(--font-sans);
+    font-size: 0.78rem;
+    letter-spacing: 0.02em;
+    text-transform: none;
+  }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    font-family: var(--font-sans);
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border: 1px solid var(--color-rule);
+    color: var(--color-ink-soft);
+    background: rgba(255, 255, 255, 0.4);
+  }
+
+  .pill-paper {
+    border-color: rgba(122, 91, 43, 0.4);
+    color: var(--color-paper);
+    background: rgba(200, 169, 101, 0.15);
+  }
+  .pill-rote {
+    border-color: rgba(44, 93, 74, 0.4);
+    color: var(--color-rote);
+    background: rgba(109, 163, 139, 0.15);
+  }
+}

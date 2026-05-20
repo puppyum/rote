@@ -1,0 +1,45 @@
+---
+import { discrepancies } from '../data/discrepancies';
+---
+
+<section id="delta" class="container-wide mt-24 scroll-mt-24" aria-labelledby="delta-h">
+  <header class="mb-8 max-w-3xl">
+    <p class="cite">03 · what changed and why</p>
+    <h2 id="delta-h" class="mt-1 text-3xl font-semibold leading-tight">
+      The deltas, in one place.
+    </h2>
+    <p class="mt-3 text-base text-[var(--color-ink-soft)]">
+      Every place the rote behaviour differs from the paper, with the paper claim, the rote
+      measurement or behaviour, and one sentence on what made the change possible — usually
+      a library or PEP that shipped after 2011. The full log lives in <code>site/DISCREPANCIES.md</code>.
+    </p>
+  </header>
+  <div class="overflow-x-auto rounded-md border hairline bg-white/40">
+    <table class="w-full min-w-[760px] text-left text-sm">
+      <thead>
+        <tr class="border-b hairline text-xs text-[var(--color-ink-faint)]">
+          <th class="px-4 py-3 font-medium">Topic</th>
+          <th class="px-4 py-3 font-medium">Paper (2011)</th>
+          <th class="px-4 py-3 font-medium">rote (2026)</th>
+          <th class="px-4 py-3 font-medium">Why it differs</th>
+        </tr>
+      </thead>
+      <tbody>
+        {discrepancies.map((d) => (
+          <tr class="border-b hairline-soft last:border-0 align-top">
+            <td class="px-4 py-4">
+              <p class="font-semibold leading-snug">{d.topic}</p>
+              <p class="cite mt-1">{d.citation}</p>
+              {d.enabled ? (
+                <p class="cite mt-1 text-[var(--color-rote)]">enabled by: {d.enabled}</p>
+              ) : null}
+            </td>
+            <td class="px-4 py-4 text-[var(--color-ink-soft)]"><Fragment set:html={d.paper.replace(/`([^`]+)`/g, '<code>$1</code>')} /></td>
+            <td class="px-4 py-4"><Fragment set:html={d.rote.replace(/`([^`]+)`/g, '<code>$1</code>')} /></td>
+            <td class="px-4 py-4 text-[var(--color-ink-soft)]"><Fragment set:html={d.why.replace(/`([^`]+)`/g, '<code>$1</code>')} /></td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</section>

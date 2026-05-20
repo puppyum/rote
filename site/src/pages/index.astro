@@ -1,0 +1,29 @@
+---
+import Base from '../layouts/Base.astro';
+import Banner from '../components/Banner.astro';
+import DiscrepancyLog from '../components/DiscrepancyLog.astro';
+import PurityGates from '../components/PurityGates.astro';
+import Footer from '../components/Footer.astro';
+import EditRerunLoop from '../components/islands/EditRerunLoop.tsx';
+import SpeedComparison from '../components/islands/SpeedComparison.tsx';
+import SerializerComparison from '../components/islands/SerializerComparison.tsx';
+import CallGraph from '../components/islands/CallGraph.tsx';
+import AstHashEditor from '../components/islands/AstHashEditor.tsx';
+---
+
+<Base
+  title="rote · companion to IncPy (Guo & Engler, 2011)"
+  description="Interactive companion site to a pure-Python reimplementation of IncPy. Edit-rerun timings, the call graph, file-dep adversarial edits, and a live AST-hash editor."
+>
+  <Banner />
+  <main class="pb-16">
+    <EditRerunLoop client:load />
+    <DiscrepancyLog />
+    <SpeedComparison client:visible />
+    <SerializerComparison client:visible />
+    <CallGraph client:visible />
+    <PurityGates />
+    <AstHashEditor client:visible />
+  </main>
+  <Footer />
+</Base>
