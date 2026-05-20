@@ -75,19 +75,18 @@ export default function CallGraph() {
   return (
     <section id="graph" className="container-wide mt-24 scroll-mt-24" aria-labelledby="graph-h">
       <header className="mb-8 max-w-3xl">
-        <p className="cite">06 · the call graph, live</p>
-        <h2 id="graph-h" className="mt-1 text-3xl font-semibold leading-tight">
-          Edit a node. Watch the invalidation propagate.
+        <p className="eyebrow">06 — Call graph</p>
+        <h2 id="graph-h" className="h-section mt-3">
+          How invalidation moves through a dependent pipeline
         </h2>
-        <p className="mt-3 text-base text-[var(--color-ink-soft)]">
-          Click any stage to change its source. rote rehashes the canonical AST; the new hash
-          mismatches the cached entry, so the cache misses. Anything downstream that read the
-          stage's output also misses. Anything upstream is untouched and served from cache.
-          The mechanic is paper §3.4 transitive invalidation; the graph is drawn live so the
-          propagation is easier to follow than in prose.
+        <p className="lede mt-4">
+          Click any stage. rote rehashes its canonical AST; the new hash mismatches the cached
+          entry, so that stage misses. Anything downstream that read its output also misses.
+          Anything upstream is untouched. This is the §3.4 mechanism in the paper, redrawn so
+          the propagation is visible rather than described.
         </p>
       </header>
-      <div className="rounded-md border hairline bg-white/40 p-4 sm:p-6">
+      <div className="card p-5 sm:p-7">
         <ReactFlowProvider>
           <Inner />
         </ReactFlowProvider>

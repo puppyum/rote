@@ -4,17 +4,17 @@ import { discrepancies } from '../data/discrepancies';
 
 <section id="delta" class="container-wide mt-24 scroll-mt-24" aria-labelledby="delta-h">
   <header class="mb-8 max-w-3xl">
-    <p class="cite">03 · what changed and why</p>
-    <h2 id="delta-h" class="mt-1 text-3xl font-semibold leading-tight">
-      The deltas, in one place.
+    <p class="eyebrow">03 — Differences from the paper</p>
+    <h2 id="delta-h" class="h-section mt-3">
+      Every place rote behaves differently, with the reason
     </h2>
-    <p class="mt-3 text-base text-[var(--color-ink-soft)]">
-      Every place the rote behaviour differs from the paper, with the paper claim, the rote
-      measurement or behaviour, and one sentence on what made the change possible — usually
-      a library or PEP that shipped after 2011. The full log lives in <code>site/DISCREPANCIES.md</code>.
+    <p class="lede mt-4">
+      The paper claim, rote's current measurement or behaviour, and one sentence on what
+      made the change possible. Most rows credit a library or PEP that shipped after 2011 —
+      that's the bulk of the gap. The full log lives in <code>site/DISCREPANCIES.md</code>.
     </p>
   </header>
-  <div class="overflow-x-auto rounded-md border hairline bg-white/40">
+  <div class="overflow-x-auto card">
     <table class="w-full min-w-[760px] text-left text-sm">
       <thead>
         <tr class="border-b hairline text-xs text-[var(--color-ink-faint)]">

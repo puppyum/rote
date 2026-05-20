@@ -47,15 +47,16 @@ export default function SerializerComparison() {
       aria-labelledby="serializer-h"
     >
       <header className="mb-8 max-w-3xl">
-        <p className="cite">05 · serializer comparison</p>
-        <h2 id="serializer-h" className="mt-1 text-3xl font-semibold leading-tight">
-          Figure 6, redrawn for the wheels we have now.
+        <p className="eyebrow">05 — Serializers (paper Figure 6, updated)</p>
+        <h2 id="serializer-h" className="h-section mt-3">
+          Which serializer to use for which payload
         </h2>
-        <p className="mt-3 text-base text-[var(--color-ink-soft)]">
-          The paper compared three pickle variants. rote dispatches by type: PyArrow IPC
-          (released 2016) for DataFrames, <code>numpy.save</code> for ndarrays, safetensors
-          (2023) for tensors, msgpack for primitives, cloudpickle as the last-resort fallback.
-          Where pickle still wins — large homogeneous Python containers — the chart shows it.
+        <p className="lede mt-4">
+          The paper compared three pickle variants. rote dispatches by type instead: PyArrow IPC
+          (2016) for DataFrames, <code>numpy.save</code> for ndarrays, safetensors (2023) for
+          tensors, msgpack for primitives, cloudpickle as the fallback. The chart also shows the
+          cases where pickle still wins — large homogeneous Python containers — so the dispatch
+          decision has both sides visible.
         </p>
       </header>
 
@@ -78,7 +79,7 @@ export default function SerializerComparison() {
         </button>
       </div>
 
-      <div className="rounded-md border hairline bg-white/40 p-4 sm:p-6">
+      <div className="card p-5 sm:p-7">
         <SerializerChart rows={rows} path={path} />
         <table className="mt-6 w-full text-left text-sm">
           <thead>

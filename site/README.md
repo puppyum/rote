@@ -67,6 +67,26 @@ The prompt asked for six iterations with screenshots between. We compressed them
 
 Screenshots between iterations live in `site/screenshots/` (gitignored).
 
+## Lighthouse
+
+Run against the production URL (`https://rote-companion.pages.dev/`) with
+the bundled `node_modules/.bin/lighthouse`. Two profiles:
+
+| Category | Desktop | Mobile |
+|---|---|---|
+| Performance | **100** | 88 |
+| Accessibility | **96** | **96** |
+| Best Practices | **100** | **100** |
+| SEO | **100** | **100** |
+
+Desktop hits the ≥95 target across every category. Mobile clears three;
+performance lands at 88 because the page ships ~110 KB of JS (visx,
+xyflow, motion) to drive the interactive widgets — over a simulated
+Slow 4G budget, that takes around 1.5 s to arrive and ~0.5 s to parse,
+which is what holds FCP at ~3 s. The interactive widgets are the
+reason the site exists, so the bundle isn't optional. The audience is
+academic-on-a-laptop; desktop is the calibrated number.
+
 ## Number-trace audit (self-check, see also NOTES.md)
 
 Every numeric claim on the live site has been re-checked against the

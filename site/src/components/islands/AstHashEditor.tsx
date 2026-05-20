@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { canonicalSource, hash } from '../../lib/canonical';
+import { loadPyodideOnce, pyodideCanonicalize } from '../../lib/pyodide';
 
 const DEFAULT_SRC = `def build_features(df: pd.DataFrame, weight: float = 1.0) -> pd.DataFrame:
     """Compute weighted log-features for the training set."""
@@ -63,19 +64,28 @@ const PRESETS: { label: string; desc: string; src: string }[] = [
  * The four preset edits exercise the property exactly the way the Python
  * implementation does; the textarea is freeform for exploration.
  */
+type PyodideState =
+  | { status: 'idle' }
+  | { status: 'loading' }
+  | { status: 'ready' }
+  | { status: 'error'; message: string };
+
 export default function AstHashEditor() {
   const [src, setSrc] = useState(DEFAULT_SRC);
   const [digest, setDigest] = useState<string>('…');
   const [baselineDigest, setBaselineDigest] = useState<string>('…');
   const [canonical, setCanonical] = useState<string>('');
+  const [pyodide, setPyodide] = useState<PyodideState>({ status: 'idle' });
+  const [pyDigest, setPyDigest] = useState<string>('…');
+  const [pyBaseline, setPyBaseline] = useState<string>('…');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Compute baseline hash on mount.
+  // Compute JS-side baseline hash on mount.
   useEffect(() => {
     void hash(canonicalSource(DEFAULT_SRC)).then(setBaselineDigest);
   }, []);
 
-  // Live-update the displayed hash whenever src changes.
+  // Live-update the JS hash whenever src changes.
   useEffect(() => {
     const canonicalStr = canonicalSource(src);
     setCanonical(canonicalStr);
@@ -88,31 +98,78 @@ export default function AstHashEditor() {
     };
   }, [src]);
 
+  // Kick Pyodide off on idle / soon-as-possible so first paint is JS-fast,
+  // but the real rote.identity.canonical_source is ready in the background.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (pyodide.status !== 'idle') return;
+    const start = () => {
+      setPyodide({ status: 'loading' });
+      loadPyodideOnce()
+        .then(() => {
+          setPyodide({ status: 'ready' });
+        })
+        .catch((err: unknown) => {
+          const message = err instanceof Error ? err.message : String(err);
+          setPyodide({ status: 'error', message });
+        });
+    };
+    const w = window as Window & {
+      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
+    if (w.requestIdleCallback) {
+      const id = w.requestIdleCallback(start, { timeout: 2500 });
+      return () => w.cancelIdleCallback?.(id);
+    }
+    const t = window.setTimeout(start, 800);
+    return () => window.clearTimeout(t);
+  }, [pyodide.status]);
+
+  // When Pyodide is ready, run the baseline + current source through it.
+  useEffect(() => {
+    if (pyodide.status !== 'ready') return;
+    let cancelled = false;
+    void pyodideCanonicalize(DEFAULT_SRC).then((r) => {
+      if (!cancelled) setPyBaseline(r.digest);
+    });
+    void pyodideCanonicalize(src).then((r) => {
+      if (!cancelled) setPyDigest(r.digest);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [pyodide.status, src]);
+
   const matchesBaseline = digest === baselineDigest && digest !== '…';
   const shortDigest = digest === '…' ? '…' : `${digest.slice(0, 12)}…${digest.slice(-6)}`;
+  const shortPyDigest = pyDigest === '…' ? '…' : `${pyDigest.slice(0, 12)}…${pyDigest.slice(-6)}`;
+  const pyMatchesBaseline =
+    pyDigest !== '…' && pyBaseline !== '…' && pyDigest === pyBaseline;
 
   return (
     <section id="try" className="container-wide mt-24 scroll-mt-24" aria-labelledby="try-h">
       <header className="mb-8 max-w-3xl">
-        <p className="cite">08 · try it yourself</p>
-        <h2 id="try-h" className="mt-1 text-3xl font-semibold leading-tight">
-          The canonical AST hash, in the browser.
+        <p className="eyebrow">08 — Live editor</p>
+        <h2 id="try-h" className="h-section mt-3">
+          Canonical AST hash, recomputed as you type
         </h2>
-        <p className="mt-3 text-base text-[var(--color-ink-soft)]">
-          Edit the function. Watch the hash. Adding a comment or renaming a local leaves it
-          steady: same observable behaviour, same identity. Changing a literal or an operator
-          changes it. The paper §3.2 description was coarse source-byte hashing; this is what
-          canonical-AST hashing looks like with <code>libcst</code> available.
+        <p className="lede mt-4">
+          Edit the function on the left. The hash on the right updates as you type. Adding a
+          comment or renaming a local leaves it steady (same observable behaviour, same
+          identity); changing a literal or an operator changes it. The paper §3.2 used coarse
+          source-byte hashing, so all of those edits would have invalidated; the AST canonical
+          form gets there with <code>libcst</code>.
         </p>
-        <p className="mt-2 text-xs text-[var(--color-ink-faint)]">
-          This widget runs a JS approximation of the same canonicalisation that
-          <code> src/rote/identity.py </code>does — comments, docstrings, annotations stripped;
-          parameters indexed; SHA-256 stands in for blake3 because Web Crypto has the former
-          natively. The Python implementation is the source of truth.
+        <p className="mt-3 text-sm text-[var(--color-ink-faint)]">
+          A short canonicalisation runs in the browser so the editor is interactive on first
+          paint. Once Pyodide finishes loading, the same function is run through the real
+          <code> rote.identity.canonical_source </code>and the two hashes are shown side by
+          side; if they disagree, the difference is the JS approximation, not rote.
         </p>
       </header>
 
-      <div className="grid gap-4 rounded-md border hairline bg-white/40 p-4 sm:p-6 md:grid-cols-[3fr_2fr]">
+      <div className="grid gap-4 card p-5 sm:p-7 md:grid-cols-[3fr_2fr]">
         <div>
           <div className="flex flex-wrap items-baseline justify-between gap-x-3">
             <label className="cite" htmlFor="ast-editor">
@@ -145,11 +202,14 @@ export default function AstHashEditor() {
             className="mt-2 w-full resize-y rounded-sm border hairline bg-[#fbf8f1] p-3 font-mono text-[13px] leading-snug text-[var(--color-ink)] outline-none focus:border-[var(--color-rote)]"
           />
         </div>
-        <aside className="flex flex-col gap-3">
+        <aside className="flex flex-col gap-4">
           <div>
-            <p className="cite">canonical hash</p>
+            <div className="flex items-baseline justify-between">
+              <p className="eyebrow">Canonical hash</p>
+              <span className="cite">JS, on every keystroke</span>
+            </div>
             <p
-              className={`mt-1 font-mono text-base ${
+              className={`mt-1 font-mono text-[0.92rem] ${
                 matchesBaseline ? 'text-[var(--color-rote)]' : 'text-[var(--color-warn)]'
               }`}
               aria-live="polite"
@@ -158,21 +218,66 @@ export default function AstHashEditor() {
             </p>
             <p className="mt-1 text-sm text-[var(--color-ink-soft)]">
               {matchesBaseline
-                ? 'Same as baseline. The cache would hit.'
+                ? 'Matches the baseline. The cache would hit.'
                 : digest === '…'
                   ? 'Hashing…'
                   : 'Different from baseline. The cache would miss.'}
             </p>
           </div>
+
+          <div className="rounded-md border hairline-soft bg-[var(--color-page)]/60 p-3">
+            <div className="flex items-baseline justify-between">
+              <p className="eyebrow">Pyodide · real rote.identity</p>
+              <span
+                className="cite"
+                aria-live="polite"
+                aria-busy={pyodide.status === 'loading'}
+              >
+                {pyodide.status === 'idle' && 'queued'}
+                {pyodide.status === 'loading' && 'loading…'}
+                {pyodide.status === 'ready' && 'ready'}
+                {pyodide.status === 'error' && 'offline'}
+              </span>
+            </div>
+            {pyodide.status === 'ready' ? (
+              <>
+                <p
+                  className={`mt-1 font-mono text-[0.92rem] ${
+                    pyMatchesBaseline ? 'text-[var(--color-rote)]' : 'text-[var(--color-warn)]'
+                  }`}
+                >
+                  {shortPyDigest}
+                </p>
+                <p className="mt-1 text-sm text-[var(--color-ink-soft)]">
+                  {pyDigest === digest
+                    ? 'Same hash as the JS approximation above.'
+                    : 'JS approximation diverges from real rote here — the Python hash is the source of truth.'}
+                </p>
+              </>
+            ) : pyodide.status === 'error' ? (
+              <p className="mt-1 text-sm text-[var(--color-ink-soft)]">
+                Couldn't reach the Pyodide CDN. The JS approximation above still works.
+              </p>
+            ) : (
+              <p className="mt-1 text-sm text-[var(--color-ink-soft)]">
+                Pyodide loads in the background. Once it's ready, the real{' '}
+                <code>rote.identity.canonical_source</code> runs on every edit.
+              </p>
+            )}
+          </div>
+
           <div>
-            <p className="cite">baseline hash</p>
+            <p className="eyebrow">Baseline hash</p>
             <p className="mt-1 font-mono text-xs text-[var(--color-ink-faint)]">
-              {baselineDigest === '…' ? '…' : `${baselineDigest.slice(0, 12)}…${baselineDigest.slice(-6)}`}
+              {baselineDigest === '…'
+                ? '…'
+                : `${baselineDigest.slice(0, 12)}…${baselineDigest.slice(-6)}`}
             </p>
           </div>
-          <details className="mt-1">
-            <summary className="cite cursor-pointer">show canonical source</summary>
-            <pre className="mt-2 max-h-48 overflow-auto rounded-sm border hairline-soft bg-[#fbf8f1] p-3 font-mono text-[11px] leading-snug text-[var(--color-ink-soft)] whitespace-pre">
+
+          <details>
+            <summary className="cite cursor-pointer">Show canonical source</summary>
+            <pre className="mt-2 max-h-48 overflow-auto rounded-md border hairline-soft bg-[var(--color-page)] p-3 font-mono text-[11px] leading-snug text-[var(--color-ink-soft)] whitespace-pre">
 {canonical}
             </pre>
           </details>
@@ -249,7 +354,7 @@ function FileDepInset() {
   const current = rows[scenario];
 
   return (
-    <div className="mt-6 rounded-md border hairline-soft bg-white/30 p-4 sm:p-6">
+    <div className="mt-6 card p-5 sm:p-7">
       <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-3">
         <div>
           <p className="cite">08b · the file-dependency adversarial edit</p>

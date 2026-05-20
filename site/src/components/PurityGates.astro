@@ -2,58 +2,59 @@
 const gates = [
   {
     n: 1,
-    title: 'long enough to matter',
+    title: 'The call ran long enough to be worth caching',
     paperRef: '§3.3.2 perf guard',
     signal: 'duration_ns ≥ Config.min_duration_s (default 1 s)',
-    note: 'Below the threshold, the cache write would cost more than the recomputation. Same idea as the paper’s perf guard; rote’s implementation in src/rote/purity.py adapts to the per-call encode-time too.',
+    note: 'Below the threshold, the cache write would cost more than the recomputation. Same idea as the paper’s perf guard; rote also tracks the per-call encode time in `src/rote/purity.py` so a 1 GB return for a trivial call still gets blacklisted.',
   },
   {
     n: 2,
-    title: 'no impure I/O',
+    title: 'The call performed no impure I/O',
     paperRef: '§3.3 + §3.3.1',
-    signal: 'no audit-hook event for network / exec / subprocess; file opens in `w` left dangling at call exit',
-    note: 'PEP 578 audit hooks (2018) classify network, subprocess, exec, file-append, and unclosed-write opens. A `with open(...): ...` write inside the call is paper §3.3.1 self-contained-write: pure with a write-dependency.',
+    signal:
+      'no audit-hook event for network / exec / subprocess; any file opened in `"w"` mode is closed before the call returns',
+    note: 'PEP 578 audit hooks (2018) classify network, subprocess, exec, file-append, and unclosed-write opens. A `with open(...): ...` write that closes inside the call is paper §3.3.1’s self-contained write — pure, plus a tracked write-dependency.',
   },
   {
     n: 3,
-    title: 'no argument mutation',
+    title: 'No argument was mutated in place during the call',
     paperRef: 'beyond the paper',
     signal: 'arg fingerprints at entry == arg fingerprints at exit',
-    note: 'Copy-on-call hashing: re-fingerprint mutable args at call exit, drop the cache write if anything moved. The paper assumed pure-looking functions were pure. This catches in-place list, dict, and DataFrame mutation that static analysis alone wouldn’t spot.',
+    note: 'Copy-on-call hashing: re-fingerprint mutable args at call exit and drop the cache write if anything moved. The paper assumed pure-looking functions were pure; rote catches the in-place list, dict, and DataFrame mutations that static analysis alone wouldn’t spot.',
   },
   {
     n: 4,
-    title: 'source + deps unchanged',
+    title: 'The source code and its dependencies haven’t changed',
     paperRef: '§3.4 + §3.5',
     signal:
       'blake3(canonical_AST(func) ⊕ transitive_callee_ids ⊕ file_dep_hashes ⊕ global_dep_fingerprints) matches the cached key',
-    note: 'libcst canonical AST means cosmetic edits leave the hash steady (paper invalidated). Transitive callee ids cover §3.4. file_dep_hashes are the (size, mtime_ns, ctime_ns) + content-hash table from §3.5 with ctime_ns added to catch backdated edits.',
+    note: 'libcst’s canonical AST lets cosmetic edits leave the hash steady (the paper invalidated those). Transitive callee ids cover §3.4. file_dep_hashes are the (size, mtime_ns, ctime_ns) plus content-hash table from §3.5; ctime_ns is rote’s addition so a backdated edit still misses.',
   },
 ];
 ---
 
 <section id="gates" class="container-wide mt-24 scroll-mt-24" aria-labelledby="gates-h">
   <header class="mb-8 max-w-3xl">
-    <p class="cite">07 · purity, refreshed</p>
-    <h2 id="gates-h" class="mt-1 text-3xl font-semibold leading-tight">
-      Four gates, all of them green.
+    <p class="eyebrow">07 — Purity model</p>
+    <h2 id="gates-h" class="h-section mt-3">
+      The four checks a function has to pass to be memoized
     </h2>
-    <p class="mt-3 text-base text-[var(--color-ink-soft)]">
-      A refresher on the paper’s purity model, with one column showing what rote watches for
-      each gate. Any red signal blocks the cache write; the reason is logged to
-      <code>rote.stats()["invalidation_reasons"]</code> so missed memoization is visible
-      instead of silent.
+    <p class="lede mt-4">
+      A refresher on the paper's purity model. Each row shows what the paper required and the
+      specific signal rote watches for it. Any single red signal blocks the cache write; the
+      reason is logged to <code>rote.stats()["invalidation_reasons"]</code> so missed memoization
+      is visible instead of silent.
     </p>
   </header>
 
   <ol class="grid gap-4 md:grid-cols-2">
     {gates.map((g) => (
-      <li class="group rounded-md border hairline bg-white/40 p-5 transition-colors hover:bg-white/60">
+      <li class="group card p-6 transition-colors hover:bg-[var(--color-page-dark)]/40">
         <div class="flex items-baseline justify-between">
           <span class="num text-2xl text-[var(--color-rote)]">{String(g.n).padStart(2, '0')}</span>
           <span class="pill pill-paper">{g.paperRef}</span>
         </div>
-        <h3 class="mt-2 font-serif text-xl leading-snug">{g.title}</h3>
+        <h3 class="mt-3 text-lg leading-snug">{g.title}</h3>
         <p class="mt-3 font-mono text-xs text-[var(--color-ink-soft)] whitespace-pre-wrap">
           <Fragment set:html={g.signal.replace(/`([^`]+)`/g, '<code>$1</code>')} />
         </p>

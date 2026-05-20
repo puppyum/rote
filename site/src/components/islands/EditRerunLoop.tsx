@@ -46,21 +46,21 @@ export default function EditRerunLoop() {
   return (
     <section id="loop" className="container-wide mt-24 scroll-mt-24" aria-labelledby="loop-h">
       <header className="mb-8 max-w-3xl">
-        <p className="cite">02 · edit-rerun loop</p>
-        <h2 id="loop-h" className="mt-1 text-3xl font-semibold leading-tight">
-          Change one line. Save. Rerun.
+        <p className="eyebrow">02 — Edit-rerun loop</p>
+        <h2 id="loop-h" className="h-section mt-3">
+          What the cache buys you, stage by stage
         </h2>
-        <p className="mt-3 text-base text-[var(--color-ink-soft)]">
-          Pick which stage you just edited. Plain Python re-runs the whole pipeline. <code>rote</code>{' '}
-          re-runs only the downstream stages whose AST or inputs have changed. The numbers below
-          come from <code>bench/results/cross_process_pipeline.json</code> — fresh interpreter each
-          run, which is the workflow paper §4.2 actually measured.
+        <p className="lede mt-4">
+          Pick which stage you just edited. Plain Python re-runs the whole pipeline; rote re-runs
+          only the stages whose AST or inputs changed. Numbers come from{' '}
+          <code>bench/results/cross_process_pipeline.json</code>, which measures the workflow paper
+          §4.2 actually evaluated — a fresh interpreter on every run.
         </p>
       </header>
 
       <div className="mb-4 flex flex-wrap items-center gap-x-6 gap-y-2">
-        <fieldset className="inline-flex items-center gap-3" aria-label="Edit which stage?">
-          <legend className="cite mr-2">edit:</legend>
+        <fieldset className="inline-flex items-center gap-2" aria-label="Edit which stage?">
+          <legend className="eyebrow mr-3">Edited stage</legend>
           {pipeline.map((s, i) => (
             <button
               key={s.id}
@@ -76,8 +76,8 @@ export default function EditRerunLoop() {
           ))}
         </fieldset>
 
-        <div className="ml-auto inline-flex items-center gap-3">
-          <span className="cite">timings:</span>
+        <div className="ml-auto inline-flex items-center gap-2">
+          <span className="eyebrow mr-1">Timings</span>
           <button
             type="button"
             onClick={() => setMode('crossProcess')}
@@ -97,7 +97,7 @@ export default function EditRerunLoop() {
         </div>
       </div>
 
-      <div className="rounded-md border hairline bg-white/40 p-4 sm:p-6">
+      <div className="card p-5 sm:p-7">
         <TimelineRow
           label="plain Python"
           sublabel={`${fmtSeconds(totals.plain)} total — every stage re-runs`}
@@ -169,12 +169,12 @@ function TimelineRow({ label, sublabel, bars, tone }: TimelineRowProps) {
     <div>
       <div className="flex flex-wrap items-baseline justify-between gap-x-4">
         <span
-          className={`pill ${tone === 'rote' ? 'pill-rote' : 'pill-paper'} font-mono normal-case`}
+          className={`pill ${tone === 'rote' ? 'pill-rote' : 'pill-paper'}`}
           aria-hidden
         >
           {label}
         </span>
-        <span className="cite text-[var(--color-ink-faint)]">{sublabel}</span>
+        <span className="cite">{sublabel}</span>
       </div>
       <div className="mt-2 flex h-12 w-full overflow-hidden rounded-sm" aria-label={`${label} timeline`}>
         {bars.map((b, i) => (
@@ -214,8 +214,8 @@ function TimelineRow({ label, sublabel, bars, tone }: TimelineRowProps) {
                   className="absolute inset-0 flex flex-col justify-center px-2"
                   style={{
                     background:
-                      'repeating-linear-gradient(135deg, #ece4cd, #ece4cd 6px, #faf6ee 6px, #faf6ee 12px)',
-                    color: 'var(--color-ink-soft)',
+                      'repeating-linear-gradient(135deg, #e7e2d1, #e7e2d1 6px, #f7f4ec 6px, #f7f4ec 12px)',
+                    color: 'var(--color-ink-faint)',
                     borderTop: '1px dashed var(--color-rule)',
                   }}
                 >

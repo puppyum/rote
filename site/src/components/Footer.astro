@@ -2,42 +2,42 @@
 ---
 
 <footer class="mt-28 border-t hairline bg-[var(--color-page-dark)]">
-  <div class="container-wide py-10 md:py-14">
-    <h2 class="font-serif text-2xl">Acknowledgements</h2>
-    <p class="mt-3 max-w-3xl text-base text-[var(--color-ink-soft)]">
-      Thanks to Philip Guo and David Engler for the original IncPy. The core idea — observe a
-      Python script at runtime, find the long-running pure calls, persist their results across
-      runs — is theirs. rote rebuilds it on the platform Python has since become; any flaws in
-      this reimplementation are ours.
-    </p>
-
-    <section class="mt-8 max-w-3xl">
-      <p class="cite">citation</p>
-      <pre class="mt-2 overflow-x-auto rounded-sm border hairline-soft bg-white/40 p-4 font-mono text-xs leading-relaxed text-[var(--color-ink-soft)]">
+  <div class="container-wide grid gap-10 py-12 md:grid-cols-[2fr_3fr] md:py-16">
+    <div>
+      <p class="eyebrow">Acknowledgements</p>
+      <p class="mt-4 text-base text-[var(--color-ink-soft)]">
+        Thanks to Philip Guo and David Engler for the original IncPy. The core idea —
+        observe a Python script at runtime, find the long-running pure calls, persist their
+        results across runs — is theirs. rote rebuilds it on the platform Python has since
+        become; any flaws in this reimplementation are ours.
+      </p>
+    </div>
+    <div>
+      <p class="eyebrow">Citation</p>
+      <pre class="mt-4 overflow-x-auto rounded-lg border hairline bg-[var(--color-card)] p-4 font-mono text-[0.78rem] leading-relaxed text-[var(--color-ink-soft)]">
 {`Guo, P. J., & Engler, D. (2011).
 Using automatic persistent memoization to facilitate data analysis scripting.
 Proceedings of the 2011 International Symposium on Software Testing and
 Analysis (ISSTA '11), 287-297.`}
       </pre>
-    </section>
-
-    <div class="mt-8 flex flex-wrap gap-x-8 gap-y-2 text-sm">
-      <a href="https://github.com/puppyum/rote" class="text-[var(--color-rote)] hover:underline">
-        repository · puppyum/rote
-      </a>
-      <a
-        href="https://pgbovine.net/projects/pubs/guo-IncPy-ISSTA-2011.pdf"
-        class="text-[var(--color-rote)] hover:underline"
-      >
-        original paper (PDF)
-      </a>
-      <a
-        href="https://github.com/puppyum/rote/blob/main/site"
-        class="text-[var(--color-rote)] hover:underline"
-      >
-        site source
-      </a>
-      <span class="text-[var(--color-ink-faint)]">Apache-2.0</span>
+      <div class="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-sm">
+        <a href="https://github.com/puppyum/rote" class="text-[var(--color-rote)] hover:underline">
+          puppyum/rote
+        </a>
+        <a
+          href="https://pgbovine.net/projects/pubs/guo-IncPy-ISSTA-2011.pdf"
+          class="text-[var(--color-rote)] hover:underline"
+        >
+          Original paper (PDF)
+        </a>
+        <a
+          href="https://github.com/puppyum/rote/blob/main/site"
+          class="text-[var(--color-rote)] hover:underline"
+        >
+          Site source
+        </a>
+        <span class="text-[var(--color-ink-faint)]">Apache-2.0</span>
+      </div>
     </div>
   </div>
 </footer>

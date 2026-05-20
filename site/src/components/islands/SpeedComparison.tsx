@@ -29,14 +29,15 @@ export default function SpeedComparison() {
   return (
     <section id="speed" className="container-wide mt-24 scroll-mt-24" aria-labelledby="speed-h">
       <header className="mb-8 max-w-3xl">
-        <p className="cite">04 · how it measures up</p>
-        <h2 id="speed-h" className="mt-1 text-3xl font-semibold leading-tight">
-          Two reference points: the paper, and joblib.
+        <p className="eyebrow">04 — Speedups</p>
+        <h2 id="speed-h" className="h-section mt-3">
+          Where rote sits, against the paper and against joblib
         </h2>
-        <p className="mt-3 text-base text-[var(--color-ink-soft)]">
-          Joblib is the incumbent for memoized research scripts, so it sets the floor for
-          per-call warm cost. The paper sets the ceiling for what was achievable in 2011.
-          Both comparisons live in <code>bench/results/*.json</code>.
+        <p className="lede mt-4">
+          Joblib is the incumbent for memoized research scripts, so it's the floor on per-call
+          warm cost. The paper is the reference for what was achievable in 2011. Both
+          comparisons live in <code>bench/results/*.json</code>; the toggle below picks which
+          one you want to read first.
         </p>
       </header>
 
@@ -70,7 +71,7 @@ export default function SpeedComparison() {
 
 function VsPaper() {
   return (
-    <div className="rounded-md border hairline bg-white/40 p-4 sm:p-6">
+    <div className="card p-5 sm:p-7">
       <table className="w-full text-left">
         <thead>
           <tr className="border-b hairline text-sm text-[var(--color-ink-faint)]">
@@ -169,7 +170,7 @@ function VsJoblib({ geomean }: { geomean: number }) {
   });
 
   return (
-    <div className="rounded-md border hairline bg-white/40 p-4 sm:p-6">
+    <div className="card p-5 sm:p-7">
       <div className="mb-3 flex flex-wrap items-baseline justify-between">
         <p className="text-base text-[var(--color-ink-soft)]">
           Geomean across the five per-call workloads: <strong>{fmtRatio(geomean)}</strong> faster
@@ -237,9 +238,9 @@ function VsJoblib({ geomean }: { geomean: number }) {
                   fontFamily="var(--font-mono)"
                   fontSize={12}
                   fill="var(--color-ink)"
+                  data-loses={r.loses ? 'true' : 'false'}
                 >
-                  {fmtRatio(r.ratio)}
-                  {r.loses && ' — joblib wins'}
+                  {r.loses ? `${fmtRatio(r.ratio)} — joblib wins` : fmtRatio(r.ratio)}
                 </text>
                 <title>
                   {r.label}: rote {fmtSeconds(r.roteWarm)} vs joblib {fmtSeconds(r.joblibWarm)}

@@ -1,21 +1,20 @@
 ---
-// Acknowledgement banner. Above the fold, above the nav, no nav competing
-// for attention. The first paragraph names the paper; the demo follows.
+// Acknowledgement banner. Above the fold, above the nav. The first
+// paragraph names the paper before anything else on the page; the
+// demo follows below.
 ---
 
 <header class="border-b hairline bg-[var(--color-page-dark)]">
-  <div class="container-wide py-10 md:py-14">
-    <p class="cite mb-2">incpy → rote · companion site</p>
-    <h1 class="font-serif text-3xl leading-[1.15] tracking-tight md:text-[2.6rem]">
-      This is a reimplementation of <em>IncPy</em>
-      <span class="block text-[var(--color-ink-soft)]">
-        (Guo &amp; Engler, ISSTA 2011). The core idea is theirs.
-      </span>
+  <div class="container-wide pt-14 pb-12 md:pt-20 md:pb-16">
+    <p class="eyebrow mb-5">A companion site to a reimplementation of IncPy</p>
+    <h1 class="h-display max-w-[22ch]">
+      Reading IncPy (Guo &amp; Engler, 2011) alongside rote — the same design, rebuilt for Python today.
     </h1>
-    <p class="mt-5 max-w-3xl text-base text-[var(--color-ink-soft)] md:text-lg">
-      The visualisations below show how the same design behaves on contemporary Python, and
-      where we had to diverge. Every number traces back to a benchmark JSON in <code>bench/results/</code>;
-      every design call cites a paper section.
+    <p class="lede mt-6">
+      Every figure, table, and design claim in the paper paired with the corresponding behaviour
+      of <code>rote</code>, a pure-Python reimplementation. The core idea is theirs; what changed
+      is the platform underneath. Numbers come from <code>bench/results/</code>; sections cite the
+      paper they reference.
     </p>
   </div>
 </header>
@@ -24,15 +23,15 @@
   aria-label="Section nav"
 >
   <div class="container-wide flex items-center justify-between py-3">
-    <span class="cite">rote · paper companion</span>
-    <ul class="hidden gap-5 text-sm text-[var(--color-ink-soft)] md:flex">
-      <li><a href="#loop" class="hover:text-[var(--color-rote)]">edit-rerun</a></li>
-      <li><a href="#delta" class="hover:text-[var(--color-rote)]">what changed</a></li>
-      <li><a href="#speed" class="hover:text-[var(--color-rote)]">how it measures up</a></li>
-      <li><a href="#serializer" class="hover:text-[var(--color-rote)]">serializer</a></li>
-      <li><a href="#graph" class="hover:text-[var(--color-rote)]">call graph</a></li>
-      <li><a href="#gates" class="hover:text-[var(--color-rote)]">purity gates</a></li>
-      <li><a href="#try" class="hover:text-[var(--color-rote)]">try it</a></li>
+    <a href="#top" class="eyebrow no-underline">rote · paper companion</a>
+    <ul class="hidden gap-6 text-[0.86rem] text-[var(--color-ink-soft)] md:flex">
+      <li><a href="#loop" class="hover:text-[var(--color-rote)]">Edit-rerun</a></li>
+      <li><a href="#delta" class="hover:text-[var(--color-rote)]">Where rote differs</a></li>
+      <li><a href="#speed" class="hover:text-[var(--color-rote)]">Speedups</a></li>
+      <li><a href="#serializer" class="hover:text-[var(--color-rote)]">Serializers</a></li>
+      <li><a href="#graph" class="hover:text-[var(--color-rote)]">Call graph</a></li>
+      <li><a href="#gates" class="hover:text-[var(--color-rote)]">Purity</a></li>
+      <li><a href="#try" class="hover:text-[var(--color-rote)]">Live editor</a></li>
     </ul>
     <a
       href="https://github.com/puppyum/rote"

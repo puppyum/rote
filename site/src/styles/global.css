@@ -2,28 +2,35 @@
 
 @theme {
   --font-sans:
-    'Geist Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Geist', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
     'Helvetica Neue', sans-serif;
-  --font-serif: 'Source Serif 4', 'Source Serif Pro', Newsreader, Georgia, ui-serif, serif;
+  --font-serif: 'Source Serif 4', Newsreader, Georgia, ui-serif, serif;
   --font-mono:
     'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
 
-  /* Warm not-quite-cream. Easier on the author's eyes than #fff. */
-  --color-page: #faf6ee;
-  --color-page-dark: #f3ecdc;
-  --color-ink: #1e1a14;
-  --color-ink-soft: #4b4537;
-  --color-ink-faint: #807762;
-  --color-rule: #d8cfb9;
-  --color-rule-soft: #ece4cd;
+  /* Cooler, more restrained palette. Cream stays as the page tone but
+     the accent greens move toward graphite + spruce so the site reads
+     editorial rather than craft-fair. */
+  --color-page: #f7f4ec;
+  --color-page-dark: #efeadd;
+  --color-ink: #131310;
+  --color-ink-soft: #3a3a32;
+  --color-ink-faint: #75736a;
+  --color-rule: #d9d4c5;
+  --color-rule-soft: #e7e2d1;
+  --color-card: #ffffff;
 
-  /* Paper side / rote side accents. Used in the side-by-side widgets.
-     Author's-eye check: muted, not neon. */
-  --color-paper: #7a5b2b;
-  --color-paper-soft: #c8a965;
-  --color-rote: #2c5d4a;
-  --color-rote-soft: #6da38b;
-  --color-warn: #9b4233;
+  /* Two accents only. Paper-side bronze and rote-side spruce. Used
+     sparingly — most surfaces are neutral. */
+  --color-paper: #8c6a2f;
+  --color-paper-soft: #d6bf86;
+  --color-rote: #1f4d3c;
+  --color-rote-soft: #b9d4c5;
+  --color-warn: #a23a2a;
+  --color-warn-soft: #f1c8bf;
+
+  --shadow-card: 0 1px 0 rgba(19, 19, 16, 0.04);
+  --shadow-card-lift: 0 1px 0 rgba(19, 19, 16, 0.04), 0 10px 24px -16px rgba(19, 19, 16, 0.16);
 }
 
 @layer base {
@@ -35,21 +42,35 @@
   html {
     background: var(--color-page);
     color: var(--color-ink);
-    font-family: var(--font-serif);
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.55;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     font-feature-settings:
       'kern' 1,
-      'liga' 1,
-      'calt' 1;
+      'ss01' 1,
+      'cv01' 1;
+    font-synthesis: none;
+    letter-spacing: -0.005em;
+  }
+
+  /* Body links get a subtle underline offset so descenders aren't cut. */
+  :where(p, li, td, dd) a:not(.pill) {
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.18em;
+    text-decoration-color: color-mix(in srgb, var(--color-rote) 55%, transparent);
+    transition: text-decoration-color 140ms ease;
+  }
+  :where(p, li, td, dd) a:not(.pill):hover {
+    text-decoration-color: var(--color-rote);
   }
 
   body {
     font-feature-settings:
       'kern' 1,
-      'liga' 1,
-      'calt' 1;
+      'ss01' 1;
   }
 
   h1,
@@ -61,6 +82,14 @@
     font-family: var(--font-sans);
     letter-spacing: -0.02em;
     color: var(--color-ink);
+    font-weight: 600;
+    text-wrap: balance;
+  }
+
+  p,
+  li,
+  dd {
+    text-wrap: pretty;
   }
 
   code,
@@ -71,16 +100,34 @@
     font-family: var(--font-mono);
     font-feature-settings:
       'tnum' 1,
-      'zero' 1;
+      'zero' 1,
+      'ss01' 1;
+  }
+
+  /* Inline `code` in prose: subtle, no bright background. */
+  :where(p, li, td, dd, summary, span) > code {
+    background: var(--color-rule-soft);
+    color: var(--color-ink);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 0.86em;
   }
 
   ::selection {
-    background: rgba(45, 93, 74, 0.18);
+    background: rgba(31, 77, 60, 0.16);
   }
 
-  /* Honour reduced motion for the heavy widgets. */
+  /* Hairline focus ring tuned to the page tone. */
+  :focus-visible {
+    outline: 2px solid var(--color-rote);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
   @media (prefers-reduced-motion: reduce) {
-    * {
+    *,
+    *::before,
+    *::after {
       animation-duration: 0.001ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.001ms !important;
@@ -91,15 +138,29 @@
 
 @layer components {
   .container-prose {
-    max-width: 64rem;
+    max-width: 60rem;
     margin-inline: auto;
     padding-inline: 1.5rem;
   }
 
   .container-wide {
-    max-width: 78rem;
+    max-width: 76rem;
     margin-inline: auto;
     padding-inline: 1.5rem;
+  }
+
+  /* Card surface. Soft, premium, no over-rendered borders. */
+  .card {
+    background: var(--color-card);
+    border: 1px solid var(--color-rule);
+    border-radius: 10px;
+    box-shadow: var(--shadow-card);
+  }
+
+  .card-soft {
+    background: rgba(255, 255, 255, 0.55);
+    border: 1px solid var(--color-rule);
+    border-radius: 10px;
   }
 
   .num {
@@ -117,37 +178,94 @@
     border-color: var(--color-rule-soft);
   }
 
-  .cite {
+  /* Section eyebrow — small, all caps, used once per section. */
+  .eyebrow {
     color: var(--color-ink-faint);
     font-family: var(--font-sans);
-    font-size: 0.78rem;
-    letter-spacing: 0.02em;
-    text-transform: none;
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 500;
   }
 
+  .cite {
+    color: var(--color-ink-faint);
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    letter-spacing: 0.02em;
+  }
+
+  /* Inline label / chip. Used for toggles and tags. */
   .pill {
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
-    padding: 0.15rem 0.55rem;
-    border-radius: 999px;
+    padding: 0.3rem 0.7rem;
+    min-height: 32px;
+    border-radius: 6px;
     font-family: var(--font-sans);
-    font-size: 0.72rem;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+    font-size: 0.78rem;
+    letter-spacing: 0;
+    text-transform: none;
     border: 1px solid var(--color-rule);
     color: var(--color-ink-soft);
-    background: rgba(255, 255, 255, 0.4);
+    background: var(--color-card);
+    font-weight: 500;
+    cursor: pointer;
+    user-select: none;
+    transition:
+      background-color 140ms ease,
+      border-color 140ms ease,
+      color 140ms ease,
+      scale 120ms ease;
+  }
+  .pill:hover {
+    background: var(--color-page);
+    border-color: var(--color-ink-faint);
+  }
+  button.pill:active {
+    scale: 0.96;
+  }
+  .pill[aria-pressed='true'],
+  .pill-rote {
+    border-color: var(--color-rote);
+    color: var(--color-rote);
+    background: var(--color-rote-soft);
+  }
+  .pill-paper {
+    border-color: var(--color-paper);
+    color: var(--color-paper);
+    background: rgba(214, 191, 134, 0.3);
   }
 
-  .pill-paper {
-    border-color: rgba(122, 91, 43, 0.4);
-    color: var(--color-paper);
-    background: rgba(200, 169, 101, 0.15);
+  /* Cards lift slightly on hover where they're interactive. */
+  .card.is-hoverable {
+    transition: box-shadow 200ms ease, border-color 200ms ease, translate 200ms ease;
   }
-  .pill-rote {
-    border-color: rgba(44, 93, 74, 0.4);
-    color: var(--color-rote);
-    background: rgba(109, 163, 139, 0.15);
+  .card.is-hoverable:hover {
+    box-shadow: var(--shadow-card-lift);
+    border-color: var(--color-ink-faint);
+  }
+
+  /* Display heading sizes that match a real editorial site. */
+  .h-display {
+    font-family: var(--font-sans);
+    font-size: clamp(2rem, 3.6vw + 1rem, 3.25rem);
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    font-weight: 600;
+  }
+  .h-section {
+    font-family: var(--font-sans);
+    font-size: clamp(1.45rem, 1vw + 1rem, 1.85rem);
+    line-height: 1.18;
+    letter-spacing: -0.022em;
+    font-weight: 600;
+  }
+  .lede {
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    color: var(--color-ink-soft);
+    max-width: 60ch;
   }
 }
