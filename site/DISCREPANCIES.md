@@ -13,7 +13,7 @@ footer).
 | | Paper (2011) | rote (2026) | Why it differs |
 |---|---|---|---|
 | Edit-rerun on real workflows | ~10× | **4.9× cross-process** on a paper-shaped pipeline (`cross_process_pipeline.json`: 1.75 s plain → 0.35 s warm; joblib 0.19 s) | About half the paper's factor. Two reasons: hardware has moved (Apple Silicon NVMe is faster at the work the cache is skipping); and rote content-hashes file dependencies on every hit where the paper trusted `(size, mtime)`. The validation costs cycles but closes a stale-result hole. Joblib pays neither cost and is correspondingly faster here. |
-| In-process variant | ~10× (paper §4.2 mixed in-process/cross-process) | **~48× in-process warm** on the same pipeline (`paper_pipeline.json`: 264 ms plain → 4.6 ms warm) | Upper bound once interpreter startup is amortized. Not the number that sits next to the paper's ~10× headline — the cross-process number is. |
+| In-process variant | ~10× (paper §4.2 mixed in-process/cross-process) | **~46× in-process warm** on the same pipeline (`paper_pipeline.json`: 252 ms plain → 5.5 ms warm) | Upper bound once interpreter startup is amortized. Not the number that sits next to the paper's ~10× headline — the cross-process number is. |
 
 ## File-dependency tracking
 

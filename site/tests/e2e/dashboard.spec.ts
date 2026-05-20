@@ -23,10 +23,7 @@ test.describe('rote companion dashboard', () => {
   test('edit-rerun timeline reacts to the stage picker', async ({ page }) => {
     const section = page.locator('#loop');
     await section.scrollIntoViewIfNeeded();
-    await section
-      .getByRole('group', { name: /Edit which stage/i })
-      .getByRole('button', { name: 'train', exact: true })
-      .click();
+    await section.getByRole('button', { name: 'train', exact: true }).click();
     const status = section.locator('p[aria-live="polite"]');
     await expect(status).toContainText('You edited');
     await expect(status.locator('strong')).toHaveText('train');
@@ -36,7 +33,7 @@ test.describe('rote companion dashboard', () => {
     const section = page.locator('#speed');
     await section.scrollIntoViewIfNeeded();
     await section.getByRole('button', { name: /vs joblib/i }).click();
-    await expect(section.locator('text[data-loses="true"]').first()).toBeVisible();
+    await expect(section.getByText(/joblib wins/i)).toBeVisible();
     await section.getByRole('button', { name: /vs the 2011 paper/i }).click();
     await expect(section.getByText('~10×')).toBeVisible();
   });

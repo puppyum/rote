@@ -19,7 +19,7 @@ export const discrepancies: Discrepancy[] = [
   {
     topic: 'Edit-rerun speedup',
     paper: '~10× on real workflows (fresh interpreter each run).',
-    rote: '4.9× cross-process on a paper-shaped pipeline (1.75 s → 0.35 s; joblib 0.19 s).',
+    rote: '4.9× cross-process on a paper-shaped pipeline (1.75 s plain → 0.35 s warm; joblib 0.19 s).',
     why: 'Roughly half the paper’s factor. Hardware has moved, and rote content-hashes file dependencies on every hit where the paper trusted (size, mtime). The validation costs cycles but closes a stale-result hole.',
     citation: 'paper §4.2 · bench/results/cross_process_pipeline.json',
   },

@@ -22,13 +22,13 @@ table below shows the median across 5 independent runs.
 
 | Workload | joblib warm | rote warm | speedup |
 |---|---|---|---|
-| w1_compute_pi | 107 µs | 32 µs | **3.39×** |
-| w2_polynomial_pi | 101 µs | 29 µs | **3.43×** |
-| w3_numpy_qr | 253 µs | 33 µs | **7.68×** |
-| w4_count_words | 92 µs | 30 µs | **3.09×** |
-| w5_matrix_invert | 85 µs | 55 µs | **1.54×** |
+| w1_compute_pi | 101 µs | 49 µs | **2.06×** |
+| w2_polynomial_pi | 90 µs | 35 µs | **2.58×** |
+| w3_numpy_qr | 226 µs | 35 µs | **6.40×** |
+| w4_count_words | 98 µs | 37 µs | **2.64×** |
+| w5_matrix_invert | 88 µs | 69 µs | **1.29×** |
 
-Geometric mean: **3.35× faster than joblib** across the five workloads.
+Geometric mean: **2.59× faster than joblib** across the five workloads.
 
 ## Paper-style edit-rerun pipeline (in-process)
 
@@ -36,10 +36,10 @@ A three-stage pipeline (parse → aggregate → format) where the user edits the
 final stage and re-runs. Upstream stages are served from cache.
 
 ```
-plain Python (cold, v2):                  223 ms
-rote (cold, first run):                   279 ms   (cache write overhead)
-rote (warm, edit downstream):             4.6 ms   (~48× faster than plain)
-joblib (warm, edit downstream):           1.0 ms
+plain Python (cold, v2):                  252 ms
+rote (cold, first run):                   369 ms   (cache write overhead)
+rote (warm, edit downstream):             5.5 ms   (~46× faster than plain)
+joblib (warm, edit downstream):           1.8 ms
 ```
 
 Joblib wins on this benchmark because it keys purely on argument values.

@@ -99,15 +99,15 @@ Per-function warm-hit cost against `joblib.Memory`:
 
 | Workload | joblib warm | rote warm | speedup |
 |---|---|---|---|
-| 2 M-term Leibniz | 107 µs | 32 µs | 3.39× |
-| Basel sum | 101 µs | 29 µs | 3.43× |
-| 400×400 NumPy QR | 253 µs | 33 µs | **7.68×** |
-| 200K-char bag-of-words | 92 µs | 30 µs | 3.09× |
-| 200×200 matrix inverse | 85 µs | 55 µs | 1.54× |
+| 2 M-term Leibniz | 101 µs | 49 µs | 2.06× |
+| Basel sum | 90 µs | 35 µs | 2.58× |
+| 400×400 NumPy QR | 226 µs | 35 µs | **6.40×** |
+| 200K-char bag-of-words | 98 µs | 37 µs | 2.64× |
+| 200×200 matrix inverse | 88 µs | 69 µs | 1.29× |
 
-Geomean across the five workloads: **3.35× faster than `joblib.Memory`**.
+Geomean across the five workloads: **2.59× faster than `joblib.Memory`**.
 
-On the paper-style multi-stage pipeline (parse → aggregate → format), with an edit to the final stage and everything in one process: plain Python re-runs the whole thing in 223 ms; `rote` skips the upstream stages and finishes the warm run in 4.6 ms, about **48× faster than the cold pipeline**. `joblib.Memory` is faster on the same benchmark (1.0 ms warm) because it keys purely on argument values, where `rote` content-hashes the intermediate files on every hit so a mtime-preserving edit cannot return a stale result.
+On the paper-style multi-stage pipeline (parse → aggregate → format), with an edit to the final stage and everything in one process: plain Python re-runs the whole thing in 252 ms; `rote` skips the upstream stages and finishes the warm run in 5.5 ms, about **46× faster than the cold pipeline**. `joblib.Memory` is faster on the same benchmark (1.8 ms warm) because it keys purely on argument values, where `rote` content-hashes the intermediate files on every hit so a mtime-preserving edit cannot return a stale result.
 
 The tradeoff at the level you actually live with — edit, save, rerun, fresh Python process each time:
 
@@ -141,7 +141,7 @@ Test suite: **381 tests pass**, including 60 differential and 36 perturbation te
 ```
 src/rote/         the package (13 modules, ~4K lines)
 tests/            unit / property / integration / correctness suites
-docs/             architecture, decisions log, benchmarks, evaluation
+docs/             architecture, benchmarks, evaluation, joblib migration
 bench/            workload + serializer microbenchmarks
 corpus/           30 fast scripts for differential tests, plus a realistic/ subset for coverage
 examples/         demos used by the integration tests

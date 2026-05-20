@@ -1,7 +1,7 @@
 """Adversarial purity tests — hand-crafted edge cases that the purity
 detector must classify correctly.
 
-These are the "trickiest cases" listed in CLAUDE.md Phase 4:
+The trickiest cases:
 
   * function pure unless argument value triggers a side effect
   * function that uses id() but is observationally pure

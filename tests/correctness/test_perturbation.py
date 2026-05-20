@@ -1,5 +1,6 @@
-"""Perturbation harness — applies the taxonomy from CLAUDE.md to corpus
-scripts and verifies that rote's cache invalidation matches ground truth.
+"""Perturbation harness — applies a taxonomy of code and data edits to
+corpus scripts and verifies that rote's cache invalidation matches ground
+truth.
 
 Two categories of perturbation:
 

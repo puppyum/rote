@@ -81,9 +81,9 @@ rebalance toward realistically-slow research scripts.
 
 See [`BENCHMARKS.md`](./BENCHMARKS.md) for the full table.
 
-* rote vs joblib warm: 1.54× to 7.68× faster across 5/5 workloads;
-  3.35× geomean.
-* Paper-shaped edit-rerun pipeline: about 48× faster than plain Python
+* rote vs joblib warm: 1.29× to 6.40× faster across 5/5 workloads;
+  2.59× geomean.
+* Paper-shaped edit-rerun pipeline: about 46× faster than plain Python
   on the downstream-edit warm run.
 * Cold-cache overhead vs plain Python: roughly +11% to +16% on the CPU-loop
   workloads in the final run, negative on NumPy QR, and high on
