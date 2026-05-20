@@ -1,0 +1,15 @@
+# Test runner artifacts
+test-results/
+playwright-report/
+
+# Local-only screenshots; iteration captures
+screenshots/
+
+# Scratchpad
+NOTES.md
+
+# Build output (already in root .gitignore but listed here for clarity)
+dist/
+.astro/
+.vite/
+node_modules/
