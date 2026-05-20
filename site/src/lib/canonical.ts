@@ -85,8 +85,8 @@ function renameParameters(src: string): string {
   const defRegex = /def\s+(\w+)\s*\(([^)]*)\)\s*:/g;
   // Collect all def matches first so we can determine block ranges.
   const matches: { fname: string; rawParams: string; start: number; end: number }[] = [];
-  let m: RegExpExecArray | null;
-  while ((m = defRegex.exec(src))) {
+  for (const m of src.matchAll(defRegex)) {
+    if (m.index === undefined) continue;
     matches.push({ fname: m[1], rawParams: m[2], start: m.index, end: m.index + m[0].length });
   }
   if (matches.length === 0) return src;

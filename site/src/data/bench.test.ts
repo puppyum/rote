@@ -54,7 +54,8 @@ describe('serializerResults', () => {
   });
 
   it('rote beats pickle on numpy float32 writes (architectural win)', () => {
-    const row = serializerResults.find((r) => r.name === 'numpy_3M_f32')!;
+    const row = serializerResults.find((r) => r.name === 'numpy_3M_f32');
+    if (!row) throw new Error('numpy_3M_f32 row missing from serializer results');
     expect(row.rote_write_ms).toBeLessThan(row.pickle_write_ms);
   });
 });

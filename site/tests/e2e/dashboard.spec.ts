@@ -18,9 +18,11 @@ test.describe('rote companion dashboard', () => {
   });
 
   test('edit-rerun timeline reacts to the stage picker', async ({ page }) => {
-    const trainButton = page.locator('#loop').getByRole('button', { name: 'train' });
-    await trainButton.click();
-    await expect(page.getByText(/You edited\s+train/i)).toBeVisible();
+    const section = page.locator('#loop');
+    await section.getByRole('button', { name: 'train' }).click();
+    const status = section.locator('p[aria-live="polite"]');
+    await expect(status).toContainText('You edited');
+    await expect(status.locator('strong')).toHaveText('train');
   });
 
   test('speed comparison switches between vs-paper and vs-joblib', async ({ page }) => {
