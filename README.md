@@ -1,8 +1,15 @@
 # rote
 
-Automatic, dependency-aware memoization for Python research scripts. No interpreter fork, no decorators required.
+> Automatic, dependency-aware memoization for Python research scripts. No interpreter fork, no decorators required.
+
+[![License: Apache 2.0](https://img.shields.io/badge/license-Apache_2.0-1f4d3c.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/python-3.12%2B-1f4d3c.svg)](pyproject.toml)
+[![Tests](https://img.shields.io/badge/tests-381%20passing-1f4d3c.svg)](tests/)
+[![Site](https://img.shields.io/badge/companion%20site-rote--companion.pages.dev-1f4d3c.svg)](https://rote-companion.pages.dev)
 
 `rote` is a pure-Python reimplementation of [IncPy (Guo & Engler, ISSTA 2011)][paper] on contemporary CPython (≥3.12). Same goal as the original: observe a script at runtime, find the function calls that are pure and long-running, and persist their results across runs. The implementation is new, built on `sys.monitoring` (PEP 669) and audit hooks (PEP 578), so no patched interpreter is needed.
+
+There's a [companion site](https://rote-companion.pages.dev) that walks through the design, the speedups, and where rote diverges from the paper. If you're reading this for the first time, start there.
 
 [paper]: https://pgbovine.net/projects/pubs/guo-IncPy-ISSTA-2011.pdf
 
@@ -12,12 +19,27 @@ You change one line in `analyze.py`, save, re-run. Plain Python re-does the 90 s
 
 ## Install
 
+`rote` isn't on PyPI yet, so install from source for now:
+
 ```bash
-pip install rote                  # core
-pip install "rote[all]"           # plus pyarrow, numpy, safetensors
+# Plain pip
+pip install "git+https://github.com/puppyum/rote.git"
+pip install "rote[all] @ git+https://github.com/puppyum/rote.git"   # plus pyarrow, numpy, safetensors
+
+# uv (recommended for research workflows)
+uv add "git+https://github.com/puppyum/rote.git"
 ```
 
-Python 3.12 or later. Apache-2.0.
+Local development:
+
+```bash
+git clone https://github.com/puppyum/rote.git
+cd rote
+uv venv --python 3.13 && source .venv/bin/activate
+uv pip install -e ".[dev,all]"
+```
+
+Requires Python 3.12 or later. Apache-2.0.
 
 ## Use
 
@@ -70,21 +92,33 @@ The serializer dispatches by type: Arrow IPC for DataFrames, `numpy.save` for ar
 
 ## Measured performance
 
-Apple Silicon, Python 3.13, medians of 20 warm-cache iterations:
+Apple Silicon, Python 3.13. Warm-hit timings are medians of 20 iterations; the cross-process and pipeline numbers are medians of 5 runs.
+
+Per-function warm-hit cost against `joblib.Memory`:
 
 | Workload | joblib warm | rote warm | speedup |
 |---|---|---|---|
-| 2 M-term Leibniz | 101 µs | 49 µs | 2.06× |
-| Basel sum | 90 µs | 35 µs | 2.58× |
-| 400×400 NumPy QR | 226 µs | 35 µs | **6.40×** |
-| 200K-char bag-of-words | 98 µs | 37 µs | 2.64× |
-| 200×200 matrix inverse | 88 µs | 68 µs | 1.29× |
+| 2 M-term Leibniz | 96 µs | 31 µs | 3.09× |
+| Basel sum | 101 µs | 30 µs | 3.37× |
+| 400×400 NumPy QR | 253 µs | 33 µs | **7.68×** |
+| 200K-char bag-of-words | 93 µs | 31 µs | 2.97× |
+| 200×200 matrix inverse | 104 µs | 49 µs | 2.14× |
 
-Geomean: **2.59× faster than `joblib.Memory`** across the five workloads.
+Geomean across the five workloads: **3.48× faster than `joblib.Memory`**.
 
-On a paper-style multi-stage pipeline (parse → aggregate → format) where you edit the final stage and re-run, `rote` skips the upstream stages and finishes the warm run in 5.5 ms — about **46× faster than re-running the whole pipeline cold** (255 ms). `joblib.Memory` is faster still on this one benchmark (1.8 ms warm) because it keys purely on argument values; `rote` content-hashes the intermediate files on every hit so a mtime-preserving edit can't return a stale result. The correctness/speed tradeoff, joblib comparisons across five workloads, and a serializer breakdown live in [docs/BENCHMARKS.md](docs/BENCHMARKS.md).
+On the paper-style multi-stage pipeline (parse → aggregate → format), with an edit to the final stage and everything in one process: plain Python re-runs the whole thing in 264 ms; `rote` skips the upstream stages and finishes the warm run in 6.3 ms, about **42× faster than the cold pipeline**. `joblib.Memory` is faster on the same benchmark (1.4 ms warm) because it keys purely on argument values, where `rote` content-hashes the intermediate files on every hit so a mtime-preserving edit cannot return a stale result.
 
-Test suite: **367 tests pass.** `mypy --strict` and `ruff` clean across `src/` and `tests/`. CI runs Linux, macOS, and Windows on Python 3.12 and 3.13.
+The tradeoff at the level you actually live with — edit, save, rerun, fresh Python process each time:
+
+| | wall-clock | vs plain |
+|---|---|---|
+| plain Python (whole pipeline) | 1.83 s | — |
+| `rote` warm (fresh interpreter) | 0.38 s | **4.8×** |
+| `joblib` warm (fresh interpreter) | 0.19 s | 9.6× |
+
+A persistent stat → content-hash table in the cache store is what keeps `rote`'s file-dep validation cheap across process boundaries: each warm subprocess does a `stat()` per dependency and reuses the stored hash unless `(size, mtime_ns, ctime_ns)` change. Joblib still wins here because it skips content validation outright. Full numbers, the correctness/speed tradeoff, and a serializer breakdown live in [docs/BENCHMARKS.md](docs/BENCHMARKS.md).
+
+Test suite: **381 tests pass**, including 60 differential and 36 perturbation tests. On the `corpus/realistic/` subset (five multi-second scripts), auto-mode eliminates **100% of cold compute on warm re-run**. `mypy --strict` and `ruff` clean. CI runs Linux, macOS, and Windows on Python 3.12 and 3.13.
 
 ## Public API
 
@@ -108,7 +142,7 @@ src/rote/         the package (13 modules, ~4K lines)
 tests/            unit / property / integration / correctness suites
 docs/             architecture, decisions log, benchmarks, evaluation
 bench/            workload + serializer microbenchmarks
-corpus/           30 scripts that drive the differential tests
+corpus/           30 fast scripts for differential tests, plus a realistic/ subset for coverage
 examples/         demos used by the integration tests
 ```
 
