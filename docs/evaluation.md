@@ -19,11 +19,10 @@ say about rote's correctness and performance.
 
 ### Layer A: engineering correctness
 
-* Unit tests. 75 tests across 5 modules, covering the public surface of
-  every layer.
-* Property tests (Hypothesis). 18 tests, roughly 3000+ generated examples
-  total, covering identity invariance/sensitivity and serialization round
-  trips.
+* Unit tests across the public surface of every layer.
+* Property tests (Hypothesis) covering identity invariance/sensitivity
+  and serialization round trips, with thousands of generated examples
+  per property.
 * Type and lint. `ruff check src tests` clean. `mypy --strict` on `src/`
   runs in CI.
 
@@ -58,14 +57,11 @@ dataset are out of scope for this iteration.
 
 | Test category | Passing |
 |---|---|
-| Unit | 75 / 75 |
-| Property | 18 / 18 |
-| Integration | 22 / 22 |
-| Differential (corpus) | 60 / 60 |
-| Perturbation | 36 / 36 |
-| Concurrency | 2 / 2 |
-| Other correctness / adversarial | 154 / 154 |
-| **Total** | **367 / 367** |
+| Unit (`tests/unit/`) | 82 / 82 |
+| Property — Hypothesis (`tests/property/`) | 18 / 18 |
+| Integration (`tests/integration/`) | 28 / 28 |
+| Correctness — differential, perturbation, concurrency, adversarial (`tests/correctness/`) | 253 / 253 |
+| **Total** | **381 / 381** |
 
 Zero false negatives in differential or perturbation tests. Claim 1
 (correctness) is met.
@@ -85,9 +81,9 @@ rebalance toward realistically-slow research scripts.
 
 See [`BENCHMARKS.md`](./BENCHMARKS.md) for the full table.
 
-* rote vs joblib warm: 1.29× to 6.40× faster across 5/5 workloads;
-  2.59× geomean.
-* Paper-shaped edit-rerun pipeline: about 46× faster than plain Python
+* rote vs joblib warm: 1.54× to 7.68× faster across 5/5 workloads;
+  3.35× geomean.
+* Paper-shaped edit-rerun pipeline: about 48× faster than plain Python
   on the downstream-edit warm run.
 * Cold-cache overhead vs plain Python: roughly +11% to +16% on the CPU-loop
   workloads in the final run, negative on NumPy QR, and high on
@@ -146,5 +142,5 @@ uv run pytest bench/ -m bench
 cat bench/results/*.json
 ```
 
-Total runtime on the reference machine: 367 tests + 6 benchmarks in
+Total runtime on the reference machine: 381 tests + 6 benchmarks in
 roughly 3.5 minutes.

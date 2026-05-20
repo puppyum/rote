@@ -6,12 +6,32 @@ Once a release tag exists the project will use
 
 ## [Unreleased]
 
+(no changes since v0.1.0)
+
+## [0.1.0] — 2026-05-20
+
+First public release. [PyPI](https://pypi.org/project/rote/0.1.0/).
+
+### Added
+
+- Four-layer architecture (tracing, identity, serialization + store, purity)
+  built on PEP 669 `sys.monitoring` and PEP 578 audit hooks. No interpreter
+  fork.
+- Public API: `@rote.cache`, `rote.auto()`, `rote.configure(...)`,
+  `rote.stats()`, `rote.invalidate(...)`, `rote.clear()`, `rote.graph()`.
+- CLI: `rote run`, `rote status`, `rote clear`.
+- Jupyter integration: `%load_ext rote.jupyter` plus line/cell magics.
+- Type-dispatched serialization: PyArrow IPC, `numpy.save`, safetensors,
+  msgpack, with cloudpickle as the fallback.
+- Companion site at <https://rote-companion.pages.dev> walking through the
+  design, the speedups, and where rote diverges from the paper.
+
 ### Fixed
 
 - Cache correctness (P0): `rote.clear()` now wipes the per-wrapper
-  in-memory tier as well as SQLite and blobs. The old behaviour left
-  the in-memory entry intact, so the next call returned a stale hit
-  without re-running the body.
+  in-memory tier as well as SQLite and blobs. The old behaviour left the
+  in-memory entry intact, so the next call returned a stale hit without
+  re-running the body.
 - Cache correctness (P0): argument fingerprints include parameter names,
   so `f(1, 0)` and `f(0, 1)` produce distinct keys instead of colliding.
 - Multi-process: SQLite `busy_timeout` is set before `journal_mode=WAL`.
@@ -47,10 +67,5 @@ Once a release tag exists the project will use
   `_CONTENT_HASH_LIMIT`; `identity.module_source_hash`; `Config.verbose`;
   `Config.install_import_hook`; `import_hook.uninstall`.
 
-## [0.1.0]
-
-Initial implementation. Four-layer architecture (tracing, identity,
-serialization + store, purity) on PEP 669 `sys.monitoring` and PEP 578
-audit hooks. Public API: `@rote.cache`, `rote.auto()`,
-`rote.configure(...)`, `rote.stats()`, `rote.graph()`, plus the
-`rote run / status / clear` CLI.
+[0.1.0]: https://github.com/puppyum/rote/releases/tag/v0.1.0
+[Unreleased]: https://github.com/puppyum/rote/compare/v0.1.0...main
