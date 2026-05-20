@@ -55,7 +55,9 @@ export default function EditRerunLoop() {
           you just edited. Plain Python re-runs all four. rote re-runs only the stages whose
           source or inputs changed. The numbers come from running each variant in a fresh
           Python process (the same shape as saving the script and re-typing the python
-          command), where the plain rerun takes 1.83 s and the warm rote rerun takes 0.38 s.
+          command), where the plain rerun takes{' '}
+          {fmtSeconds(crossProcessPipeline.plain_python_min_s)} and the warm rote rerun
+          takes {fmtSeconds(crossProcessPipeline.rote_warm_min_s)}.
         </p>
       </header>
 

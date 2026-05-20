@@ -94,7 +94,7 @@ freshly regenerated `bench/results/*.json`:
 
 | Claim | Source |
 |---|---|
-| 4.8× cross-process speedup | `cross_process_pipeline.json.rote_speedup_vs_plain` (4.95×, rounded) |
+| 4.9× cross-process speedup | `cross_process_pipeline.json.rote_speedup_vs_plain` |
 | ~48× in-process speedup | `paper_pipeline.json.rote_warm_speedup_vs_plain` |
 | Geomean ~3.5× vs joblib | computed in `src/data/bench.ts:geomeanRoteVsJoblib()` |
 | Joblib still wins cross-process by ~2× | `cross_process_pipeline.json.rote_vs_joblib` (0.53 → 1/0.53 ≈ 1.9×) |

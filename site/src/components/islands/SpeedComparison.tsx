@@ -17,7 +17,7 @@ type View = 'vsPaper' | 'vsJoblib';
  * Two sub-tables in one widget.
  *
  *  - vsPaper  : the paper's reported ~10× edit-rerun number next to rote's
- *               4.8× cross-process number. In-process ~48× goes in a footnote.
+ *               ~5× cross-process number. In-process ~48× goes in a footnote.
  *  - vsJoblib : head-to-head warm-hit cost across the five workloads, with
  *               the one row where joblib *wins* (cross-process) called out
  *               so the careful reader doesn't have to hunt for it.
