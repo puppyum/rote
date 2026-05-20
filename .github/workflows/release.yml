@@ -1,0 +1,76 @@
+name: release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (e.g. v0.1.0)'
+        required: true
+
+# PyPI trusted publishing requires id-token: write. No token secret needed —
+# PyPI verifies the OIDC claims from this workflow against the pending
+# publisher configured at https://pypi.org/manage/account/publishing/.
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install build
+        run: python -m pip install --upgrade build
+
+      - name: Verify tag matches pyproject version
+        run: |
+          TAG=${GITHUB_REF#refs/tags/}
+          PYPROJECT_VERSION=$(python -c "import tomllib; print(tomllib.loads(open('pyproject.toml','rb').read().decode())['project']['version'])")
+          EXPECTED="v${PYPROJECT_VERSION}"
+          if [ "$TAG" != "$EXPECTED" ]; then
+            echo "::error::Tag $TAG does not match pyproject.toml version $EXPECTED"
+            exit 1
+          fi
+          echo "Tag $TAG matches pyproject version. Proceeding."
+
+      - name: Build sdist + wheel
+        run: python -m build
+
+      - name: Check distribution metadata
+        run: |
+          python -m pip install --upgrade twine
+          python -m twine check dist/*
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/rote
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publish to PyPI (trusted publishing)
+        uses: pypa/gh-action-pypi-publish@release/v1
+        # No `password:` field — PyPI verifies the GitHub OIDC token.
