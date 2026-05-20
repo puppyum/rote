@@ -1,12 +1,16 @@
 @import 'tailwindcss';
 
+/* Self-hosted variable fonts — no Google Fonts round trip. */
+@import '@fontsource-variable/geist';
+@import '@fontsource-variable/jetbrains-mono';
+
 @theme {
   --font-sans:
-    'Geist', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-    'Helvetica Neue', sans-serif;
+    'Geist Variable', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    Roboto, 'Helvetica Neue', sans-serif;
   --font-serif: 'Source Serif 4', Newsreader, Georgia, ui-serif, serif;
   --font-mono:
-    'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+    'JetBrains Mono Variable', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
 
   /* Cooler, more restrained palette. Cream stays as the page tone but
      the accent greens move toward graphite + spruce so the site reads
