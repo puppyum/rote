@@ -89,7 +89,7 @@ A function call is memoized when all of these hold:
 
 If any check fails, the cache misses and the function runs. A cached value that can't be proven safe never gets returned; the `tests/correctness/` suite includes 36 perturbation tests and 60 differential tests that fail loudly if a cached value drifts from a fresh run.
 
-The serializer dispatches by type: Arrow IPC for DataFrames, `numpy.save` for arrays, `safetensors` for Torch tensors, msgpack for primitives, cloudpickle as a last resort. Rationale in [docs/DECISIONS.md](docs/DECISIONS.md).
+The serializer dispatches by type: Arrow IPC for DataFrames, `numpy.save` for arrays, `safetensors` for Torch tensors, msgpack for primitives, cloudpickle as a last resort.
 
 ## Measured performance
 
@@ -148,7 +148,7 @@ examples/         demos used by the integration tests
 ```
 
 Architecture in detail: [docs/architecture.md](docs/architecture.md).
-Every paper deviation logged: [docs/DECISIONS.md](docs/DECISIONS.md).
+Benchmarks: [docs/BENCHMARKS.md](docs/BENCHMARKS.md).
 Recent changes: [CHANGELOG.md](CHANGELOG.md).
 
 ## Limitations

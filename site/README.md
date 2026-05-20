@@ -99,4 +99,4 @@ freshly regenerated `bench/results/*.json`:
 | Geomean ~3.5× vs joblib | computed in `src/data/bench.ts:geomeanRoteVsJoblib()` |
 | Joblib still wins cross-process by ~2× | `cross_process_pipeline.json.rote_vs_joblib` (0.53 → 1/0.53 ≈ 1.9×) |
 | Serializer per-row ms | `serialize_microbench.json` |
-| Paper §3.2 / §3.3 / §3.3.1 / §3.3.2 / §3.4 / §3.5 / §4.2 / §4.3 references | as recorded by `docs/WHATS_NEW.md`, `docs/DECISIONS.md`, and the DASHBOARD_PROMPT itself; the PDF was not fetchable in the build environment and the user can verify locally |
+| Paper §3.2 / §3.3 / §3.3.1 / §3.3.2 / §3.4 / §3.5 / §4.2 / §4.3 references | original paper (PDF linked in the footer) |

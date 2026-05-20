@@ -3,7 +3,7 @@ conditions, and exotic Python semantics that a research workload could
 realistically hit but the basic test suite doesn't probe.
 
 Every test here either demonstrates a real protection or — if it fails —
-exposes a hole worth documenting in DECISIONS.md. There is no "skip if
+exposes a hole worth documenting in CHANGELOG.md. There is no "skip if
 hard"; we either pass or we annotate the limitation.
 """
 
@@ -430,7 +430,7 @@ def test_module_attribute_swap_to_callable_invalidates() -> None:
 
 # Module-level so the function's bytecode contains a true LOAD_GLOBAL
 # for the static analyzer to pick up. (globals()["X"] dynamic access is
-# documented in DECISIONS.md as outside the scope of the static analysis.)
+# documented as outside the scope of the static analysis.)
 _global_container: list[int] = [1, 2, 3]
 
 

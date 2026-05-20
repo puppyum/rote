@@ -51,6 +51,14 @@ CODEX_REVIEW_*.md
 DASHBOARD_PROMPT.md
 c*.csv
 
+# AI agent instructions — local to each contributor's setup
+.github/AGENTS.md
+.github/CLAUDE.md
+
+# Internal design notes — kept locally for reference, not part of the
+# public site source.
+site/DESIGN.md
+
 # Dashboard / site workspace — see DASHBOARD_PROMPT.md
 # Source under site/ IS tracked; node_modules / build output / scratchpad is not.
 site/node_modules/

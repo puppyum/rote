@@ -4,11 +4,9 @@ Every numeric or behavioural delta between the IncPy 2011 paper and the
 contemporary `rote` reimplementation. Source for the dashboard's "What
 changed" panel.
 
-Numbers come from `bench/results/*.json` (regenerated 2026-05-19) and from
-the project docs. Paper section references reflect the citation system the
-project docs use throughout — the PDF could not be fetched in this build
-environment; section claims are as recorded in `docs/WHATS_NEW.md` and
-`docs/DECISIONS.md`.
+Numbers come from `bench/results/*.json` (regenerated 2026-05-19). Paper
+section references are to the original IncPy paper (linked from the site
+footer).
 
 ## Headline edit-rerun speedup
 
