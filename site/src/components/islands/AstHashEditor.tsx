@@ -152,20 +152,22 @@ export default function AstHashEditor() {
       <header className="mb-8 max-w-3xl">
         <p className="eyebrow">09 — Live editor</p>
         <h2 id="try-h" className="h-section mt-3">
-          Canonical AST hash, recomputed as you type
+          The hash, live as you type
         </h2>
         <p className="lede mt-4">
-          Edit the function on the left. The hash on the right updates as you type. Adding a
-          comment or renaming a local leaves it steady (same observable behaviour, same
-          identity); changing a literal or an operator changes it. The paper §3.2 used coarse
-          source-byte hashing, so all of those edits would have invalidated; the AST canonical
-          form gets there with <code>libcst</code>.
+          Edit the function below. Cosmetic edits like adding a comment or renaming a local
+          variable don't change the hash, because the canonicalisation strips them out
+          before hashing. A semantic edit (a literal value, an operator) does change it. The
+          paper hashed raw source bytes (§3.2), which would have invalidated any edit at
+          all; the canonical AST form is what draws the distinction, and that's what
+          <code> libcst </code>gives us.
         </p>
         <p className="mt-3 text-sm text-[var(--color-ink-faint)]">
-          A short canonicalisation runs in the browser so the editor is interactive on first
-          paint. Once Pyodide finishes loading, the same function is run through the real
-          <code> rote.identity.canonical_source </code>and the two hashes are shown side by
-          side; if they disagree, the difference is the JS approximation, not rote.
+          A short JavaScript canonicalisation runs as soon as the page loads, so the editor
+          responds immediately. Pyodide loads in the background, and once it's ready the
+          same source goes through the real
+          <code> rote.identity.canonical_source </code>function (libcst plus hashlib). Both
+          hashes are displayed; if they disagree, it's the JS approximation that's wrong.
         </p>
       </header>
 

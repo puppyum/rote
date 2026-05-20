@@ -77,13 +77,14 @@ export default function CallGraph() {
       <header className="mb-8 max-w-3xl">
         <p className="eyebrow">07 — Call graph</p>
         <h2 id="graph-h" className="h-section mt-3">
-          How invalidation moves through a dependent pipeline
+          What happens when you edit one node
         </h2>
         <p className="lede mt-4">
-          Click any stage. rote rehashes its canonical AST; the new hash mismatches the cached
-          entry, so that stage misses. Anything downstream that read its output also misses.
-          Anything upstream is untouched. This is the §3.4 mechanism in the paper, redrawn so
-          the propagation is visible rather than described.
+          Click any node to edit it. rote rehashes the function's canonical AST, sees that
+          the new value doesn't match what was cached, and marks the node as missed.
+          Anything further down the pipeline that depended on its output is now stale too.
+          Anything earlier in the pipeline is unaffected. This is the propagation rule from
+          §3.4 of the paper, drawn live so you can watch it.
         </p>
       </header>
       <div className="card p-5 sm:p-7">

@@ -6,10 +6,11 @@
     <div>
       <p class="eyebrow">Acknowledgements</p>
       <p class="mt-4 text-base text-[var(--color-ink-soft)]">
-        Thanks to Philip Guo and David Engler for the original IncPy. The core idea —
-        observe a Python script at runtime, find the long-running pure calls, persist their
-        results across runs — is theirs. rote rebuilds it on the platform Python has since
-        become; any flaws in this reimplementation are ours.
+        Thanks to Philip Guo and David Engler for the original IncPy. The core idea is
+        theirs: watch a Python script as it runs, find the function calls that are pure
+        and slow, store their results so they don't have to run again. rote rebuilds that
+        on Python 3.12 and the libraries that have shipped since 2011. Any flaws in the
+        reimplementation are ours.
       </p>
     </div>
     <div>

@@ -31,13 +31,13 @@ export default function SpeedComparison() {
       <header className="mb-8 max-w-3xl">
         <p className="eyebrow">05 — Speedups</p>
         <h2 id="speed-h" className="h-section mt-3">
-          Where rote sits, against the paper and against joblib
+          Two ways to measure how fast it is
         </h2>
         <p className="lede mt-4">
-          Joblib is the incumbent for memoized research scripts, so it's the floor on per-call
-          warm cost. The paper is the reference for what was achievable in 2011. Both
-          comparisons live in <code>bench/results/*.json</code>; the toggle below picks which
-          one you want to read first.
+          The first reference point is the speedup the original paper reported in 2011. The
+          second is joblib, which is the most common memoization library for Python research
+          scripts today. Both sets of numbers come from <code>bench/results/*.json</code>.
+          The toggle below picks which one to look at first.
         </p>
       </header>
 
@@ -115,11 +115,11 @@ function VsPaper() {
         </tbody>
       </table>
       <p className="mt-5 text-sm text-[var(--color-ink-soft)]">
-        The cross-process number is the one to put next to the paper. Half the headline factor
-        is the right order of magnitude for fifteen years of hardware change combined with
-        rote validating file contents on every hit. The in-process number is the upper bound
-        once startup is amortized; it sits below to give the curious reader a second data
-        point, not as the claim.
+        The cross-process row is the one that lines up with the paper's measurement. Roughly
+        half the paper's reported speedup is the order of magnitude we'd expect after fifteen
+        years of hardware progress, plus the cost of rote content-hashing every file
+        dependency on every hit. The in-process number is the upper bound once interpreter
+        startup is amortised; it's listed here as a second data point, not the headline.
       </p>
     </div>
   );
@@ -173,10 +173,11 @@ function VsJoblib({ geomean }: { geomean: number }) {
     <div className="card p-5 sm:p-7">
       <div className="mb-3 flex flex-wrap items-baseline justify-between">
         <p className="text-base text-[var(--color-ink-soft)]">
-          Geomean across the five per-call workloads: <strong>{fmtRatio(geomean)}</strong> faster
-          warm. The row at the bottom (the cross-process pipeline) is the one where joblib wins
-          by a factor of ~{(1 / crossProcessPipeline.rote_vs_joblib).toFixed(1)}×; it skips the
-          content-hash validation rote pays for on every hit.
+          Across the five per-call workloads, rote is on average <strong>{fmtRatio(geomean)}</strong>{' '}
+          faster than joblib on the warm path. The bottom row in the chart is the cross-process
+          pipeline, which is the one where joblib actually wins by about a factor of{' '}
+          {(1 / crossProcessPipeline.rote_vs_joblib).toFixed(1)}×; it skips the content-hash
+          validation rote runs on every hit. That trade-off is the point of the chart.
         </p>
       </div>
       <svg viewBox={`0 0 ${width} ${height}`} className="block w-full" role="img" aria-label="rote vs joblib warm-hit speedup">

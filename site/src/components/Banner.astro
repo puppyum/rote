@@ -8,14 +8,15 @@
   <div class="container-wide pt-14 pb-12 md:pt-20 md:pb-16">
     <p class="eyebrow mb-5">A companion site to a reimplementation of IncPy</p>
     <h1 class="h-display max-w-[26ch]">
-      Edit one line in a multi-step Python script. Save. Rerun in seconds, not minutes.
+      A cache for the slow functions in your Python scripts.
     </h1>
     <p class="lede mt-6">
-      <code>rote</code> is a pure-Python library that watches a script as it runs, finds the
-      function calls that are slow and safe to remember, and persists their results so the
-      next run skips the work that didn't change. It's a reimplementation of <em>IncPy</em>
-      (Guo &amp; Engler, ISSTA 2011); the design is theirs, the platform underneath is what's
-      new. This page is the comparison.
+      You point <code>rote</code> at any Python script. As the script runs, it watches each
+      function call. If the call took meaningful time and the function looks safe to cache,
+      the return value gets written to disk. The next run reuses those stored values for any
+      function whose source code and inputs haven't changed; everything else runs as usual.
+      The design is from a 2011 paper by Philip Guo and David Engler called
+      <em>IncPy</em>. This page is the comparison.
     </p>
   </div>
 </header>

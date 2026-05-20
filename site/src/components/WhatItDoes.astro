@@ -9,27 +9,28 @@
     <header>
       <p class="eyebrow">01 — What rote does</p>
       <h2 id="what-h" class="h-section mt-3">
-        The cache that figures out for itself what's safe to cache
+        Memoization without the decorators
       </h2>
     </header>
     <div class="space-y-4">
       <p class="text-base text-[var(--color-ink-soft)]">
-        You're editing <code>analyze.py</code>. The script loads a CSV, builds features, fits
-        a model, plots a figure. Each run takes a few minutes. You tweak one line in the
-        plotting step, save, rerun — and plain Python re-does every step from the top.
+        Picture an <code>analyze.py</code> that reads a CSV, builds some features, fits a
+        model, and saves a plot. A clean run takes a few minutes. You edit one line in the
+        plotting code and run the file again. Plain Python re-executes everything from the
+        top, including the parts that didn't change.
       </p>
       <p class="text-base text-[var(--color-ink-soft)]">
-        <code>rote</code> watches the script run, decides which function calls are slow and
-        safe to remember, writes their return values to disk, and on the next run returns
-        those values instead of recomputing them. Edit the plot function and only it
-        re-runs; upstream stages come from the cache. Edit something deep in the stack and
-        everything downstream re-runs; everything else is reused.
+        <code>rote</code> watches the first run. For each function call, it decides whether
+        the work was slow enough to be worth caching and whether the function is safe to
+        cache. When both are true, the return value is written to disk under
+        <code>.rote/</code>. On the next run, the cached values come straight from disk; the
+        only thing that actually executes is the function you edited (and anything downstream
+        of it).
       </p>
       <p class="text-base text-[var(--color-ink-soft)]">
-        No decorators required, no annotations. <code>rote run analyze.py</code> rewrites
-        the script's AST in memory to wrap every function, then executes the rewritten
-        code. Your source file isn't touched. The cache lives at <code>.rote/</code> in
-        the working directory.
+        There are no decorators to add. <code>rote run analyze.py</code> rewrites the AST of
+        your script in memory so each top-level function gets wrapped automatically, then
+        runs the rewritten code. The file on disk doesn't change.
       </p>
     </div>
   </div>

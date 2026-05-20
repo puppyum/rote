@@ -6,22 +6,22 @@ const steps = [
   {
     n: 1,
     title: 'Trace',
-    body: 'PEP 669 sys.monitoring records every function call. PEP 578 audit hooks classify each file open, network connection, subprocess spawn, and exec/eval as impure I/O so the cache never returns a value computed from something it didn’t see.',
+    body: 'While your script runs, rote uses sys.monitoring (PEP 669) to see every function call. It also uses audit hooks (PEP 578) to log file opens, network access, subprocess starts, and any use of exec or eval. Those events feed the next step.',
   },
   {
     n: 2,
     title: 'Judge',
-    body: 'A call is memoized only if four things hold: it ran long enough to be worth caching, it performed no impure I/O, it didn’t mutate its arguments, and its source plus transitive dependencies hash to a known key. Any single miss disqualifies the cache write.',
+    body: 'rote memoizes a call only if it passes four checks. The call has to have run for at least a second; no impure I/O can have happened during it; the arguments must hash to the same value at exit as at entry; and the source code (along with everything the function transitively depends on) has to match what was cached. Any single failing check skips the cache write.',
   },
   {
     n: 3,
     title: 'Store',
-    body: 'The return value is serialized by type — Arrow IPC for DataFrames, numpy.save for arrays, safetensors for tensors, msgpack for primitives, cloudpickle as a fallback — and committed to a content-addressed SQLite cache. File dependencies are content-hashed so a `touch -r` can’t fool the cache.',
+    body: 'The return value is serialized using whichever library makes sense for its type: PyArrow IPC for DataFrames, numpy.save for ndarrays, safetensors for tensors, msgpack for primitives, cloudpickle for anything that doesn’t fit those buckets. The bytes go into a content-addressed SQLite cache. Files that the function read are content-hashed too, so a backdated `touch -r` can’t trick the cache into reusing a stale value.',
   },
   {
     n: 4,
     title: 'Replay',
-    body: 'Next run: same call, same args, same file inputs return the cached value in microseconds. Any change to the source, the arguments, or a tracked file invalidates the entry and the function re-runs. The first run pays for the cache; every subsequent run benefits.',
+    body: 'On the next run, rote checks the function’s identity along with its arguments and any tracked file inputs. If everything matches, the cached value comes back in microseconds. If anything has changed, the entry is invalidated and the function runs normally. The first run pays the write cost; every run after that reuses the result.',
   },
 ];
 ---
@@ -30,13 +30,10 @@ const steps = [
   <header class="mb-8 max-w-3xl">
     <p class="eyebrow">02 — How it works</p>
     <h2 id="how-h" class="h-section mt-3">
-      Four steps, in order
+      What rote does on every run
     </h2>
     <p class="lede mt-4">
-      The widgets below show what each step looks like in practice — the edit-rerun
-      timeline visualises the replay step, the purity-gates panel decomposes the judge
-      step, the serializer comparison covers store, and the live editor demonstrates the
-      hash that makes step 4 possible.
+      Each of the widgets further down the page corresponds to one of these four steps.
     </p>
   </header>
 
@@ -55,10 +52,10 @@ const steps = [
   </ol>
 
   <p class="mt-6 max-w-3xl text-sm text-[var(--color-ink-soft)]">
-    Functions doing real I/O are skipped, not silently miscached:
-    <code>rote.stats()["invalidation_reasons"]</code> records why each call missed
-    (<code>calls impure stdlib: time.time</code>, <code>argument mutated</code>, and so
-    on). Missed memoization is fine; stale results are not. Correctness is the contract;
-    the speedups are the dividend.
+    Functions that do impure work (network calls, anything that reads
+    <code>time.time()</code>, and so on) are never cached. rote logs why each call was
+    skipped in <code>rote.stats()["invalidation_reasons"]</code>, so you can read entries
+    like <code>calls impure stdlib: time.time</code> and tell whether the cache misses
+    you're seeing match what you'd expect.
   </p>
 </section>

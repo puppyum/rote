@@ -2,33 +2,33 @@
 const gates = [
   {
     n: 1,
-    title: 'The call ran long enough to be worth caching',
+    title: 'Long enough for the cache to be worth it',
     paperRef: '§3.3.2 perf guard',
     signal: 'duration_ns ≥ Config.min_duration_s (default 1 s)',
-    note: 'Below the threshold, the cache write would cost more than the recomputation. Same idea as the paper’s perf guard; rote also tracks the per-call encode time in `src/rote/purity.py` so a 1 GB return for a trivial call still gets blacklisted.',
+    note: 'Below the threshold, the cache write costs more than the recomputation would have. This is the perf guard from the paper. rote also tracks the per-call encode time in `src/rote/purity.py`, so a 1 GB return for a trivial call gets blacklisted even if the body itself ran for long enough.',
   },
   {
     n: 2,
-    title: 'The call performed no impure I/O',
+    title: 'No impure I/O during the call',
     paperRef: '§3.3 + §3.3.1',
     signal:
       'no audit-hook event for network / exec / subprocess; any file opened in `"w"` mode is closed before the call returns',
-    note: 'PEP 578 audit hooks (2018) classify network, subprocess, exec, file-append, and unclosed-write opens. A `with open(...): ...` write that closes inside the call is paper §3.3.1’s self-contained write — pure, plus a tracked write-dependency.',
+    note: 'PEP 578 audit hooks (2018) classify network access, subprocesses, exec, file appends, and writes that are still open when the call returns. A `with open(...)` write that closes inside the call is what paper §3.3.1 calls a self-contained write: still pure, and tracked as a write-dependency.',
   },
   {
     n: 3,
-    title: 'No argument was mutated in place during the call',
+    title: 'Arguments weren’t mutated in place',
     paperRef: 'beyond the paper',
     signal: 'arg fingerprints at entry == arg fingerprints at exit',
-    note: 'Copy-on-call hashing: re-fingerprint mutable args at call exit and drop the cache write if anything moved. The paper assumed pure-looking functions were pure; rote catches the in-place list, dict, and DataFrame mutations that static analysis alone wouldn’t spot.',
+    note: 'rote fingerprints mutable arguments when the call starts and again when it returns. If anything moved, the cache write is skipped. The paper assumed pure-looking functions actually were pure; this catches in-place mutation of lists, dicts, and DataFrames that static analysis would miss.',
   },
   {
     n: 4,
-    title: 'The source code and its dependencies haven’t changed',
+    title: 'Source and dependencies still match',
     paperRef: '§3.4 + §3.5',
     signal:
       'blake3(canonical_AST(func) ⊕ transitive_callee_ids ⊕ file_dep_hashes ⊕ global_dep_fingerprints) matches the cached key',
-    note: 'libcst’s canonical AST lets cosmetic edits leave the hash steady (the paper invalidated those). Transitive callee ids cover §3.4. file_dep_hashes are the (size, mtime_ns, ctime_ns) plus content-hash table from §3.5; ctime_ns is rote’s addition so a backdated edit still misses.',
+    note: 'The libcst canonical AST means cosmetic edits (a comment, a rename, a formatting change) don’t change the hash; the paper’s source-byte hash would have invalidated all of those. Transitive callee ids cover the §3.4 case. The file_dep_hashes column extends the paper’s §3.5 (size, mtime_ns) with ctime_ns and a stream-hashed content digest, which is how rote catches backdated edits.',
   },
 ];
 ---
@@ -37,13 +37,13 @@ const gates = [
   <header class="mb-8 max-w-3xl">
     <p class="eyebrow">08 — Purity model</p>
     <h2 id="gates-h" class="h-section mt-3">
-      The four checks a function has to pass to be memoized
+      The four checks rote runs before caching anything
     </h2>
     <p class="lede mt-4">
-      A refresher on the paper's purity model. Each row shows what the paper required and the
-      specific signal rote watches for it. Any single red signal blocks the cache write; the
-      reason is logged to <code>rote.stats()["invalidation_reasons"]</code> so missed memoization
-      is visible instead of silent.
+      The paper has a purity model in §3.3 onward; this is a refresher on it. Each card
+      shows what the paper required and which specific signal rote actually checks. If any
+      single signal fails, the cache write is skipped and the reason gets logged in
+      <code>rote.stats()["invalidation_reasons"]</code>.
     </p>
   </header>
 

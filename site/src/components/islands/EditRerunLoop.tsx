@@ -48,14 +48,14 @@ export default function EditRerunLoop() {
       <header className="mb-8 max-w-3xl">
         <p className="eyebrow">03 — Edit-rerun loop</p>
         <h2 id="loop-h" className="h-section mt-3">
-          What the cache buys you, stage by stage
+          Re-running a pipeline after one edit
         </h2>
         <p className="lede mt-4">
-          A four-stage pipeline (parse → aggregate → train → plot). Pick which stage you
-          just edited. Plain Python re-runs the whole pipeline; rote re-runs only the stages
-          whose AST or inputs changed. On a fresh-interpreter rerun — the workflow you
-          actually live with at the terminal — a 1.83 s plain rerun finishes in 0.38 s warm,
-          which is the difference between waiting for coffee and not.
+          A small pipeline with four stages: parse, aggregate, train, plot. Pick the stage
+          you just edited. Plain Python re-runs all four. rote re-runs only the stages whose
+          source or inputs changed. The numbers come from running each variant in a fresh
+          Python process (the same shape as saving the script and re-typing the python
+          command), where the plain rerun takes 1.83 s and the warm rote rerun takes 0.38 s.
         </p>
       </header>
 

@@ -49,14 +49,15 @@ export default function SerializerComparison() {
       <header className="mb-8 max-w-3xl">
         <p className="eyebrow">06 — Serializers (paper Figure 6, updated)</p>
         <h2 id="serializer-h" className="h-section mt-3">
-          Which serializer to use for which payload
+          Picking a serializer by what the function returns
         </h2>
         <p className="lede mt-4">
-          The paper compared three pickle variants. rote dispatches by type instead: PyArrow IPC
-          (2016) for DataFrames, <code>numpy.save</code> for ndarrays, safetensors (2023) for
-          tensors, msgpack for primitives, cloudpickle as the fallback. The chart also shows the
-          cases where pickle still wins — large homogeneous Python containers — so the dispatch
-          decision has both sides visible.
+          The paper compared three pickle variants. rote uses different serializers depending
+          on the return type. PyArrow IPC handles DataFrames, <code>numpy.save</code> handles
+          ndarrays, safetensors handles tensors, msgpack handles primitives, and cloudpickle
+          is the fallback for anything that doesn't fit those buckets. The chart below also
+          shows the workloads where pickle still wins (large homogeneous Python containers),
+          since those are the cases where the dispatch decision matters most.
         </p>
       </header>
 
