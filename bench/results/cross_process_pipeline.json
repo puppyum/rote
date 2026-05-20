@@ -1,0 +1,9 @@
+{
+  "workload": "cross_process_warm_pipeline",
+  "runs_per_condition": 5,
+  "plain_python_min_s": 1.7480283750337549,
+  "rote_warm_min_s": 0.3533759579877369,
+  "joblib_warm_min_s": 0.1859196670120582,
+  "rote_speedup_vs_plain": 4.946653374461927,
+  "rote_vs_joblib": 0.5261242673971331
+}
