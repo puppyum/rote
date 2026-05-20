@@ -150,7 +150,7 @@ export default function AstHashEditor() {
   return (
     <section id="try" className="container-wide mt-24 scroll-mt-24" aria-labelledby="try-h">
       <header className="mb-8 max-w-3xl">
-        <p className="eyebrow">08 — Live editor</p>
+        <p className="eyebrow">09 — Live editor</p>
         <h2 id="try-h" className="h-section mt-3">
           Canonical AST hash, recomputed as you type
         </h2>

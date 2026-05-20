@@ -1,6 +1,8 @@
 ---
 import Base from '../layouts/Base.astro';
 import Banner from '../components/Banner.astro';
+import WhatItDoes from '../components/WhatItDoes.astro';
+import HowItWorks from '../components/HowItWorks.astro';
 import DiscrepancyLog from '../components/DiscrepancyLog.astro';
 import PurityGates from '../components/PurityGates.astro';
 import Footer from '../components/Footer.astro';
@@ -13,10 +15,12 @@ import AstHashEditor from '../components/islands/AstHashEditor.tsx';
 
 <Base
   title="rote · companion to IncPy (Guo & Engler, 2011)"
-  description="Interactive companion site to a pure-Python reimplementation of IncPy. Edit-rerun timings, the call graph, file-dep adversarial edits, and a live AST-hash editor."
+  description="Interactive companion site to a pure-Python reimplementation of IncPy. What rote does, how it works, how it compares to the paper, and a live AST-hash editor."
 >
   <Banner />
   <main class="pb-16">
+    <WhatItDoes />
+    <HowItWorks />
     <EditRerunLoop client:load />
     <DiscrepancyLog />
     <SpeedComparison client:visible />

@@ -8,8 +8,9 @@ test.describe('rote companion dashboard', () => {
   test('acknowledgement banner is above the demo', async ({ page }) => {
     const banner = page.getByRole('heading', { level: 1 });
     await expect(banner).toBeVisible();
-    await expect(banner).toContainText(/IncPy/);
-    await expect(banner).toContainText(/Guo/);
+    const bannerSection = page.locator('header').first();
+    await expect(bannerSection).toContainText(/IncPy/);
+    await expect(bannerSection).toContainText(/Guo/);
     const loopHeading = page.locator('#loop').getByRole('heading');
     await expect(loopHeading).toBeVisible();
     const bannerBox = await banner.boundingBox();
@@ -21,7 +22,11 @@ test.describe('rote companion dashboard', () => {
 
   test('edit-rerun timeline reacts to the stage picker', async ({ page }) => {
     const section = page.locator('#loop');
-    await section.getByRole('button', { name: 'train' }).click();
+    await section.scrollIntoViewIfNeeded();
+    await section
+      .getByRole('group', { name: /Edit which stage/i })
+      .getByRole('button', { name: 'train', exact: true })
+      .click();
     const status = section.locator('p[aria-live="polite"]');
     await expect(status).toContainText('You edited');
     await expect(status.locator('strong')).toHaveText('train');

@@ -47,7 +47,7 @@ export default function SerializerComparison() {
       aria-labelledby="serializer-h"
     >
       <header className="mb-8 max-w-3xl">
-        <p className="eyebrow">05 — Serializers (paper Figure 6, updated)</p>
+        <p className="eyebrow">06 — Serializers (paper Figure 6, updated)</p>
         <h2 id="serializer-h" className="h-section mt-3">
           Which serializer to use for which payload
         </h2>

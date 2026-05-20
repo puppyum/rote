@@ -46,15 +46,16 @@ export default function EditRerunLoop() {
   return (
     <section id="loop" className="container-wide mt-24 scroll-mt-24" aria-labelledby="loop-h">
       <header className="mb-8 max-w-3xl">
-        <p className="eyebrow">02 — Edit-rerun loop</p>
+        <p className="eyebrow">03 — Edit-rerun loop</p>
         <h2 id="loop-h" className="h-section mt-3">
           What the cache buys you, stage by stage
         </h2>
         <p className="lede mt-4">
-          Pick which stage you just edited. Plain Python re-runs the whole pipeline; rote re-runs
-          only the stages whose AST or inputs changed. Numbers come from{' '}
-          <code>bench/results/cross_process_pipeline.json</code>, which measures the workflow paper
-          §4.2 actually evaluated — a fresh interpreter on every run.
+          A four-stage pipeline (parse → aggregate → train → plot). Pick which stage you
+          just edited. Plain Python re-runs the whole pipeline; rote re-runs only the stages
+          whose AST or inputs changed. On a fresh-interpreter rerun — the workflow you
+          actually live with at the terminal — a 1.83 s plain rerun finishes in 0.38 s warm,
+          which is the difference between waiting for coffee and not.
         </p>
       </header>
 

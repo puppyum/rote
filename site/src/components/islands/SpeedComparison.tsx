@@ -29,7 +29,7 @@ export default function SpeedComparison() {
   return (
     <section id="speed" className="container-wide mt-24 scroll-mt-24" aria-labelledby="speed-h">
       <header className="mb-8 max-w-3xl">
-        <p className="eyebrow">04 — Speedups</p>
+        <p className="eyebrow">05 — Speedups</p>
         <h2 id="speed-h" className="h-section mt-3">
           Where rote sits, against the paper and against joblib
         </h2>

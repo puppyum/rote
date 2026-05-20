@@ -75,7 +75,7 @@ export default function CallGraph() {
   return (
     <section id="graph" className="container-wide mt-24 scroll-mt-24" aria-labelledby="graph-h">
       <header className="mb-8 max-w-3xl">
-        <p className="eyebrow">06 — Call graph</p>
+        <p className="eyebrow">07 — Call graph</p>
         <h2 id="graph-h" className="h-section mt-3">
           How invalidation moves through a dependent pipeline
         </h2>
