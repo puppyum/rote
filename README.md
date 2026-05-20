@@ -2,13 +2,13 @@
 
 Automatic, dependency-aware memoization for Python research scripts. No interpreter fork, no decorators required.
 
-`rote` is a pure-Python reimplementation of [IncPy (Guo & Engler, ISSTA 2011)][paper] on contemporary CPython (≥3.12). Same goal as the original: observe a script at runtime, find the function calls that are pure and long-running, persist their results across runs. The implementation is fresh, built on `sys.monitoring` (PEP 669) and audit hooks (PEP 578), so no patched interpreter is needed.
+`rote` is a pure-Python reimplementation of [IncPy (Guo & Engler, ISSTA 2011)][paper] on contemporary CPython (≥3.12). Same goal as the original: observe a script at runtime, find the function calls that are pure and long-running, and persist their results across runs. The implementation is new, built on `sys.monitoring` (PEP 669) and audit hooks (PEP 578), so no patched interpreter is needed.
 
 [paper]: https://pgbovine.net/projects/pubs/guo-IncPy-ISSTA-2011.pdf
 
 ## Why
 
-You change one line in `analyze.py`, save, re-run. Plain Python re-does the 90 seconds of feature extraction, the 30 seconds of model training, and the 2 seconds of plotting — all to look at one tweaked plot. That re-work is the thing IncPy was built to remove in 2011. It's still the thing.
+You change one line in `analyze.py`, save, re-run. Plain Python re-does the 90 seconds of feature extraction, the 30 seconds of model training, and the 2 seconds of plotting, all to look at one tweaked plot. That re-work is what IncPy was built to remove in 2011. It's still the problem.
 
 ## Install
 
@@ -23,7 +23,9 @@ Python 3.12 or later. Apache-2.0.
 
 Three ways, ordered by how much you have to opt in.
 
-**Zero-config, paper-style.** Prefix your script invocation:
+### Zero-config, paper-style
+
+Prefix your script invocation:
 
 ```bash
 rote run analyze.py
@@ -31,7 +33,9 @@ rote run analyze.py
 
 The CLI AST-wraps every top-level function in your script and in any helper modules it imports. Run the script a second time after a downstream edit; only the changed function re-executes.
 
-**Decorator.** When you want to be explicit:
+### Decorator
+
+When you want to be explicit:
 
 ```python
 import rote
@@ -41,7 +45,7 @@ def build_features(df):
     ...
 ```
 
-**Inside a notebook or REPL:**
+### Inside a notebook or REPL
 
 ```python
 import rote
@@ -60,9 +64,9 @@ A function call is memoized when all of these hold:
 3. No argument mutated. Arguments are fingerprinted on entry and re-checked on exit.
 4. The function's source, every function it transitively calls, and every file it read are unchanged from the cached version.
 
-If any check fails the cache misses and the function runs. Cached values that can't be proven safe never get returned: the `tests/correctness/` suite includes 36 perturbation tests and 60 differential tests that fail loudly if a cached value drifts from a fresh run.
+If any check fails, the cache misses and the function runs. A cached value that can't be proven safe never gets returned; the `tests/correctness/` suite includes 36 perturbation tests and 60 differential tests that fail loudly if a cached value drifts from a fresh run.
 
-The serializer is type-dispatched: Arrow IPC for DataFrames, `numpy.save` for arrays, `safetensors` for Torch tensors, msgpack for primitives, cloudpickle only as a last resort. Rationale in [docs/DECISIONS.md](docs/DECISIONS.md).
+The serializer dispatches by type: Arrow IPC for DataFrames, `numpy.save` for arrays, `safetensors` for Torch tensors, msgpack for primitives, cloudpickle as a last resort. Rationale in [docs/DECISIONS.md](docs/DECISIONS.md).
 
 ## Measured performance
 
@@ -78,7 +82,7 @@ Apple Silicon, Python 3.13, medians of 20 warm-cache iterations:
 
 Geomean: **2.59× faster than `joblib.Memory`** across the five workloads.
 
-On the paper's headline workload — a multi-stage pipeline where you edit the downstream step and re-run — `rote` finishes the changed step in 5.5 ms vs plain Python's 255 ms cold. That's ≈**46×**. Full numbers and a serializer breakdown live in [docs/BENCHMARKS.md](docs/BENCHMARKS.md).
+On a paper-style multi-stage pipeline (parse → aggregate → format) where you edit the final stage and re-run, `rote` skips the upstream stages and finishes the warm run in 5.5 ms — about **46× faster than re-running the whole pipeline cold** (255 ms). `joblib.Memory` is faster still on this one benchmark (1.8 ms warm) because it keys purely on argument values; `rote` content-hashes the intermediate files on every hit so a mtime-preserving edit can't return a stale result. The correctness/speed tradeoff, joblib comparisons across five workloads, and a serializer breakdown live in [docs/BENCHMARKS.md](docs/BENCHMARKS.md).
 
 Test suite: **367 tests pass.** `mypy --strict` and `ruff` clean across `src/` and `tests/`. CI runs Linux, macOS, and Windows on Python 3.12 and 3.13.
 
@@ -114,10 +118,10 @@ Recent changes: [CHANGELOG.md](CHANGELOG.md).
 
 ## Limitations
 
-- **Python 3.12+ only.** `sys.monitoring` (PEP 669) is the load-bearing primitive; there is no fallback for older interpreters.
-- **Functions doing real I/O are skipped.** That covers network reads, append-mode file writes, and subprocess calls. The system is designed for compute-heavy steps that take a data file in and return a value out.
-- **First run pays an AST-transform overhead.** Auto-mode rewrites your script through `libcst` once per source change; the rewrite is cached on disk after that.
-- **The 1-second default threshold is conservative.** Sub-second calls aren't memoized unless you lower it explicitly with `rote.configure(min_duration_s=0.05)`.
+- Python 3.12+ only. `sys.monitoring` (PEP 669) is the load-bearing primitive; there's no fallback for older interpreters.
+- Functions doing real I/O are skipped. Network reads, append-mode file writes, and subprocess calls all disqualify a call. The system is built for compute-heavy steps that take a data file in and return a value out.
+- First run pays an AST-transform cost. Auto-mode rewrites your script through `libcst` once per source change; the rewrite is cached on disk after that.
+- The 1-second default threshold is conservative. Sub-second calls aren't memoized unless you lower it explicitly with `rote.configure(min_duration_s=0.05)`.
 
 ## License
 

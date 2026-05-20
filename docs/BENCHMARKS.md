@@ -29,11 +29,11 @@ Warm timings are **medians of 20 warm-cache iterations** to remove single-call n
 
 **rote wins on 5/5 workloads warm.** Geometric mean: **2.59× faster than joblib**.
 
-### Paper-shaped multi-stage pipeline (the headline IncPy claim)
+### Paper-shaped multi-stage pipeline
 
-This is the workflow shape the IncPy paper was built to accelerate: a
-multi-stage pipeline (parse → aggregate → format) where the user edits the
-downstream stage and re-runs. Upstream stages are served from cache.
+The workflow the IncPy paper was built around: a multi-stage pipeline
+(parse → aggregate → format) where you edit the downstream stage and
+re-run. Upstream stages are served from cache.
 
 ```
 Plain Python (all stages):       255 ms
@@ -85,27 +85,29 @@ rote run (warm)   :  0.54 s   (consistent)
 | dict 100 K items | 1.01 | msgpack | 70.06 | 28.06 | 65.94 | 23.50 |
 | list 1 M ints | 4.64 | msgpack | 391.91 | 12.51 | **26.06** | 26.86 |
 
-**Reading the table.** For arrays and DataFrames (the cases that matter for
-real research workloads), rote stays in the sub-ms to low-ms range and beats
-pickle on larger writes, while small reads can still favor pickle. For very
-large homogeneous Python containers — million-entry lists/dicts — msgpack is
-slower than pickle because Python-side iteration costs dominate; for those cases
-the fallback to cloudpickle is automatic when a smarter serializer applies.
+Reading the table: for arrays and DataFrames (the cases that matter for
+real research workloads), rote stays in the sub-ms to low-ms range and
+beats pickle on larger writes. Small reads can still favour pickle. For
+very large homogeneous Python containers (million-entry lists or dicts),
+msgpack is slower than pickle because Python-side iteration costs
+dominate; cloudpickle is the automatic fallback when no smarter
+serializer applies.
 
-## Where rote does not (yet) win
+## Where rote doesn't (yet) win
 
-* Cold-cache write overhead for extremely tiny calls (<1 ms). The
-  ``min_duration_s`` threshold (default 1 s) prevents caching these in the
+* Cold-cache write overhead for extremely tiny calls (under 1 ms). The
+  `min_duration_s` threshold (default 1 s) prevents caching these in the
   first place; if you lower it, the writes can dominate.
-* Pickle is faster for million-element Python primitive containers. If the
-  fast path is "pickle a dict of 100 K ints over and over," joblib wins.
-  Use Arrow/numpy for that kind of data.
+* Pickle is faster for million-element Python primitive containers. If
+  the hot path is "pickle a dict of 100 K ints over and over", joblib
+  wins. Use Arrow/numpy for that kind of data.
 
-## Methodology notes
+## Methodology
 
 * "Cold" is the first call after a fresh cache. "Warm" is the second call.
 * Numbers are minimums of 5 runs (less noisy than means for short
   microbenchmarks).
-* No background processes were killed for these numbers — the machine had
+* No background processes were killed for these numbers; the machine had
   normal IDE/CI processes running. Take ±10% as the noise floor.
-* Reproduce: `uv run pytest bench/ -m bench`; raw JSON in `bench/results/`.
+* Reproduce: `uv run pytest bench/ -m bench`. Raw JSON lives in
+  `bench/results/`.

@@ -1,9 +1,9 @@
 # Migrating from `joblib.Memory` to `rote`
 
-If you currently use `joblib.Memory`, switching to `rote` is one line in most
-cases. If you use the *automatic* mode, it's zero lines.
+If you already use `joblib.Memory`, switching to `rote` is usually a one-line
+change. If you use auto-mode, it's zero lines.
 
-## The 1-line port (decorator users)
+## One-line port: decorator users
 
 Before:
 
@@ -30,18 +30,19 @@ That's it. `rote.cache` accepts and returns plain functions, just like
 `joblib`. The cache lives in `.rote/` by default; override with
 `rote.configure(cache_dir="/somewhere/else")`.
 
-## The 0-line port (you have many @mem.cache decorators)
+## Zero-line port: drop all your decorators
 
-Remove them all. Run your script under `rote run`:
+Strip the `@mem.cache` lines. Run the script through `rote run`:
 
 ```bash
 rote run analyze.py
 ```
 
-The tracer will catch every function that runs for ≥1 s and is pure. You
-don't need decorators on individual functions — that's the whole point.
+The tracer catches every function that runs for at least 1 s and is pure.
+You don't need decorators on individual functions; that was the whole pitch
+of the original IncPy paper.
 
-If you only want to enable it for part of your script:
+To enable it only for part of a script:
 
 ```python
 import rote
@@ -67,37 +68,37 @@ with rote.auto():
 | CLI | No | `rote run/status/clear` |
 | Min Python version | 3.8 | 3.12 |
 
-## Behavioral differences to know
+## Behavioural differences
 
-1. **rote refuses to cache impure calls.** `joblib` caches anything you
+1. rote refuses to cache impure calls. `joblib` caches whatever you
    decorate. If your function reads `os.environ` or calls `time.time()`,
-   `joblib` cheerfully caches it, returning stale results forever. `rote`
-   detects this and skips the cache write. You can see what was skipped via
+   joblib happily returns stale results forever. rote detects the impurity
+   and skips the cache write; the reason shows up in
    `rote.stats()["invalidation_reasons"]`.
 
-2. **rote has a duration threshold.** By default, calls finishing in <1 s
-   are not cached. The cost of writing and reading exceeds the cost of
-   re-running them. Set `rote.configure(min_duration_s=0.0)` to disable
-   the threshold, or `0.1` for a more aggressive policy.
+2. rote has a duration threshold. Calls finishing in under 1 s aren't
+   cached because the round-trip costs more than the call. Set
+   `rote.configure(min_duration_s=0.0)` to disable the threshold, or
+   `0.1` for something in between.
 
-3. **rote stores type info in the index.** When you fetch a cached
-   `DataFrame`, you get back exactly a `DataFrame`, not a pickled object
-   that happens to be a DataFrame after `__reduce__`. This makes cross-process
-   sharing and offline inspection straightforward.
+3. rote stores type info in the index. Fetching a cached `DataFrame`
+   gives you back a `DataFrame`, not a pickled blob that happens to be a
+   DataFrame after `__reduce__`. That makes cross-process sharing and
+   offline inspection (open the Arrow IPC file directly) practical.
 
-4. **rote source identity is canonical.** `joblib` re-runs your function
-   if you change a comment. `rote` does not. Conversely, both correctly
-   re-run if you change a literal or an operator.
+4. rote's source identity is canonical. Editing a comment doesn't bust
+   the cache. Changing a literal or an operator does. joblib busts the
+   cache on either.
 
-## When `joblib` is still the right choice
+## When joblib is still the right choice
 
-* You're on Python ≤ 3.11. (`rote` requires 3.12 for `sys.monitoring`.)
-* You need `mmap` support for very large NumPy arrays — `joblib`'s
-  `mmap_mode` does this. `rote` does not yet; PyArrow IPC files can be
-  mmap'd but the convenience wrapper is on our backlog.
+* You're on Python ≤ 3.11. rote requires 3.12 for `sys.monitoring`.
+* You need `mmap` support for very large NumPy arrays. joblib's
+  `mmap_mode` covers this; rote doesn't yet. PyArrow IPC files can be
+  mmap'd, but the convenience wrapper is on the backlog.
 * Your workload is bottlenecked on pickling million-element pure-Python
-  containers (lists of millions of small ints). `pickle` is faster than
-  `msgpack` for that specific shape. See `BENCHMARKS.md` for numbers.
+  containers (a list of millions of small ints, say). `pickle` is faster
+  than `msgpack` for that exact shape. Numbers in `BENCHMARKS.md`.
 
-In every other case the benchmarks ([`BENCHMARKS.md`](../BENCHMARKS.md))
+In every other case the benchmarks ([`BENCHMARKS.md`](./BENCHMARKS.md))
 show `rote` ≥ `joblib` warm-cache performance.
