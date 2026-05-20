@@ -2,8 +2,9 @@
 
 > Automatic, dependency-aware memoization for Python research scripts. No interpreter fork, no decorators required.
 
-[![License: Apache 2.0](https://img.shields.io/badge/license-Apache_2.0-1f4d3c.svg)](LICENSE)
-[![Python](https://img.shields.io/badge/python-3.12%2B-1f4d3c.svg)](pyproject.toml)
+[![PyPI](https://img.shields.io/pypi/v/rote.svg?color=1f4d3c)](https://pypi.org/project/rote/)
+[![Python](https://img.shields.io/pypi/pyversions/rote.svg?color=1f4d3c)](https://pypi.org/project/rote/)
+[![License](https://img.shields.io/badge/license-Apache_2.0-1f4d3c.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-381%20passing-1f4d3c.svg)](tests/)
 [![Site](https://img.shields.io/badge/companion%20site-rote--companion.pages.dev-1f4d3c.svg)](https://rote-companion.pages.dev)
 
@@ -19,15 +20,15 @@ You change one line in `analyze.py`, save, re-run. Plain Python re-does the 90 s
 
 ## Install
 
-`rote` isn't on PyPI yet, so install from source for now:
+```bash
+pip install rote                  # core
+pip install "rote[all]"           # plus pyarrow, numpy, safetensors
+```
+
+Or with `uv`:
 
 ```bash
-# Plain pip
-pip install "git+https://github.com/puppyum/rote.git"
-pip install "rote[all] @ git+https://github.com/puppyum/rote.git"   # plus pyarrow, numpy, safetensors
-
-# uv (recommended for research workflows)
-uv add "git+https://github.com/puppyum/rote.git"
+uv add rote                       # or `uv add "rote[all]"`
 ```
 
 Local development:
@@ -75,7 +76,7 @@ with rote.auto():
     result = my_pipeline(data)
 ```
 
-In Jupyter, `%load_ext rote` makes every cell a memoization candidate.
+In Jupyter, `%load_ext rote.jupyter` makes every cell a memoization candidate.
 
 ## What gets cached
 
@@ -98,23 +99,23 @@ Per-function warm-hit cost against `joblib.Memory`:
 
 | Workload | joblib warm | rote warm | speedup |
 |---|---|---|---|
-| 2 M-term Leibniz | 96 µs | 31 µs | 3.09× |
-| Basel sum | 101 µs | 30 µs | 3.37× |
+| 2 M-term Leibniz | 107 µs | 32 µs | 3.39× |
+| Basel sum | 101 µs | 29 µs | 3.43× |
 | 400×400 NumPy QR | 253 µs | 33 µs | **7.68×** |
-| 200K-char bag-of-words | 93 µs | 31 µs | 2.97× |
-| 200×200 matrix inverse | 104 µs | 49 µs | 2.14× |
+| 200K-char bag-of-words | 92 µs | 30 µs | 3.09× |
+| 200×200 matrix inverse | 85 µs | 55 µs | 1.54× |
 
-Geomean across the five workloads: **3.48× faster than `joblib.Memory`**.
+Geomean across the five workloads: **3.35× faster than `joblib.Memory`**.
 
-On the paper-style multi-stage pipeline (parse → aggregate → format), with an edit to the final stage and everything in one process: plain Python re-runs the whole thing in 264 ms; `rote` skips the upstream stages and finishes the warm run in 6.3 ms, about **42× faster than the cold pipeline**. `joblib.Memory` is faster on the same benchmark (1.4 ms warm) because it keys purely on argument values, where `rote` content-hashes the intermediate files on every hit so a mtime-preserving edit cannot return a stale result.
+On the paper-style multi-stage pipeline (parse → aggregate → format), with an edit to the final stage and everything in one process: plain Python re-runs the whole thing in 223 ms; `rote` skips the upstream stages and finishes the warm run in 4.6 ms, about **48× faster than the cold pipeline**. `joblib.Memory` is faster on the same benchmark (1.0 ms warm) because it keys purely on argument values, where `rote` content-hashes the intermediate files on every hit so a mtime-preserving edit cannot return a stale result.
 
 The tradeoff at the level you actually live with — edit, save, rerun, fresh Python process each time:
 
 | | wall-clock | vs plain |
 |---|---|---|
-| plain Python (whole pipeline) | 1.83 s | — |
-| `rote` warm (fresh interpreter) | 0.38 s | **4.8×** |
-| `joblib` warm (fresh interpreter) | 0.19 s | 9.6× |
+| plain Python (whole pipeline) | 1.75 s | — |
+| `rote` warm (fresh interpreter) | 0.35 s | **4.9×** |
+| `joblib` warm (fresh interpreter) | 0.19 s | 9.4× |
 
 A persistent stat → content-hash table in the cache store is what keeps `rote`'s file-dep validation cheap across process boundaries: each warm subprocess does a `stat()` per dependency and reuses the stored hash unless `(size, mtime_ns, ctime_ns)` change. Joblib still wins here because it skips content validation outright. Full numbers, the correctness/speed tradeoff, and a serializer breakdown live in [docs/BENCHMARKS.md](docs/BENCHMARKS.md).
 
