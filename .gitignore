@@ -41,12 +41,6 @@ mutants/
 .DS_Store
 *.swp
 
-# Local notes / scratch
-QUESTIONS.md
-CODEX_REVIEW_NOTES.md
-CODEX_REVIEW_PROMPT.md
-c07.csv
-
 # Paper PDF (copyright — keep local, don't redistribute)
 *.pdf
 IncPy*.pdf
@@ -54,4 +48,17 @@ IncPy*.pdf
 # Internal scratch / review notes (never publish)
 QUESTIONS.md
 CODEX_REVIEW_*.md
+DASHBOARD_PROMPT.md
 c*.csv
+
+# Dashboard / site workspace — see DASHBOARD_PROMPT.md
+# Source under site/ IS tracked; node_modules / build output / scratchpad is not.
+site/node_modules/
+site/dist/
+site/.astro/
+site/.vite/
+site/.next/
+site/.output/
+site/.wrangler/
+site/NOTES.md
+site/screenshots/
